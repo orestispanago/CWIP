@@ -1,2 +1,5 @@
 *.csv
 *.docx
+shapefiles/
+plots/
+__pycache__/

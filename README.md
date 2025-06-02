@@ -71,9 +71,7 @@
 | AI Pwr On/Off                    |           | Indicator, Anti-Ice (1=Enabled, 0=Disabled)          |
 | Slave Failure?                   |           | Indicator, Slave-coil monitor (0 = good, 1 = bad)    |
 | IChecksum (CS)                   | hex       | 16-bit checksum in hexadecimal (e.g., 2FD0)          |
-| Latitude                         | degrees   | Latitude in degrees                                  |
-| Longitude                        | degrees   | Longitude in degrees                                 |
-| Magnetic Heading                 | degrees   | Magnetic Heading in degrees                          |
+
 
 ## ADC file
 

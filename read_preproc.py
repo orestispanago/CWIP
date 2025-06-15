@@ -7,15 +7,53 @@ from plotting import (
     plot_scatter_gif,
     plot_scatter_map,
     plot_temp_ss_seed_ab,
-    plot_timeseries,
+    plot_timeseries_with_seed_vlines,
+    plot_bar,
 )
 import matplotlib.pyplot as plt
+
+
+def calc_summary(df):
+    aircraft = df["aircraft"].iloc[0].values[0]
+    first = merged.index[0]
+    last = merged.index[-1]
+    duration = last - first
+    numeric_cols = df.select_dtypes(include="number").columns
+    string_cols = df.select_dtypes(exclude="number").columns
+
+    # Resample numeric and string parts separately
+    numeric_resampled = df[numeric_cols].resample("1s").mean()
+    string_resampled = df[string_cols].resample("1s").first()  # or .last()
+    # Combine them back
+    resampled_df = pd.concat([numeric_resampled, string_resampled], axis=1)
+
+    total_sec = len(resampled_df)
+    nan_rows = int(resampled_df.isna().all(axis=1).sum())
+    nan_percentage = nan_rows / total_sec * 100
+    seed_a = len(resampled_df[resampled_df["seed-a [cnt]"].diff() > 0])
+    seed_b = len(resampled_df[resampled_df["seed-b [cnt]"].diff() > 0])
+    seed_total = seed_a + seed_b
+    summary = {
+        "aircraft": aircraft,
+        "start": first,
+        "end": last,
+        "duration": duration,
+        "total_seconds": total_sec,
+        "nan_rows": nan_rows,
+        "nan_percentage": nan_percentage,
+        "seed_a": seed_a,
+        "seed_b": seed_b,
+        "seed_total": seed_total,
+    }
+    summary_df = pd.DataFrame([summary])
+    return summary_df
 
 
 flights = glob.glob("*/*/*/*/")
 
 seed = []
-for flight in flights[:10]:
+summaries_list = []
+for flight in flights:
     adc_fname = glob.glob(f"{flight}/*adc.csv")[0]
     fin_fname = glob.glob(f"{flight}/*fin.csv")[0]
     wind_fname = glob.glob(f"{flight}/*wind.csv")[0]
@@ -32,12 +70,8 @@ for flight in flights[:10]:
 
     merged = pd.concat([fin, wind], axis=1)
 
-    lat = merged["lat [deg]"]
-    lon = merged["lon [deg]"]
-    alt = merged["gps_alt [m]"]
-    temp = merged["Ambient Temperature (C)"]
-    lwc = merged["LWC (g/m^3)"]
-
+    summary = calc_summary(merged)
+    summaries_list.append(summary)
     # plot_3d_colorbar(lat, lon, alt, lwc)
 
     if (merged["seed-a [cnt]"].max() > 0) or (merged["seed-b [cnt]"].max() > 0):
@@ -45,14 +79,20 @@ for flight in flights[:10]:
 
 seed_merged = pd.concat(seed)
 
+summaries = pd.concat(summaries_list)
+summaries.reset_index(drop=True, inplace=True)
+summaries.to_csv("summaries.csv", index=False)
+
+plot_bar(summaries, "seed_total")
+
 # seed_merged = seed_merged[seed_merged["LWC (g/m^3)"] > 0]
 # seed_merged = seed_merged[seed_merged["Ambient Temperature (C)"] < 0]
 
 
-seed_locations = seed_merged[
-    (seed_merged["seed-a [cnt]"].diff() > 0)
-    | (seed_merged["seed-b [cnt]"].diff() > 0)
-]
+# seed_locations = seed_merged[
+#     (seed_merged["seed-a [cnt]"].diff() > 0)
+#     | (seed_merged["seed-b [cnt]"].diff() > 0)
+# ]
 
 # lat = seed_locations["lat [deg]"]
 # lon = seed_locations["lon [deg]"]
@@ -93,7 +133,8 @@ seed_locations = seed_merged[
 seed_merged_by_date = [
     group for _, group in seed_merged.groupby(seed_merged.index.date)
 ]
-for df in seed_merged_by_date:
-    plot_timeseries(df, "Ambient Temperature (C)")
-    plot_timeseries(df, "LWC (g/m^3)")
-    plot_timeseries(df, "gps_alt [m]")
+# for df in seed_merged_by_date:
+
+# plot_timeseries_with_seed_vlines(df, "Ambient Temperature (C)")
+# plot_timeseries_with_seed_vlines(df, "LWC (g/m^3)")
+# plot_timeseries_with_seed_vlines(df, "gps_alt [m]")

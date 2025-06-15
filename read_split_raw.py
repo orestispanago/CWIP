@@ -27,7 +27,7 @@ for fname in tqdm.tqdm(files):
     adc_rows = []
     wind_rows = []
     fin_rows = []
-    
+
     dir_name = os.path.dirname(fname).split(os.sep)
     aircraft = dir_name[-1]
     period = dir_name[-2]
@@ -65,12 +65,12 @@ for fname in tqdm.tqdm(files):
         fin_df["datetime"], format=datetime_fmt
     ).dt.floor("s")
     fin_df.set_index("datetime", inplace=True)
-    fin_df["aircraft"] = aircraft 
-    
+    fin_df["aircraft"] = aircraft
+
     base_name = os.path.basename(fname)
     stem = os.path.splitext(base_name)[0]
     date_time = stem.split("_")[-1]
-    
+
     dest_dir = f"preproc/{period}/{aircraft}/{date_time}"
     os.makedirs(dest_dir, exist_ok=True)
     adc_df.to_csv(f"{dest_dir}/{stem}_adc.csv", index=True)

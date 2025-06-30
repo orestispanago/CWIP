@@ -11,7 +11,28 @@ MEDIUM_SIZE = 14
 BIGGER_SIZE = 42
 
 
-def plot_timeseries_with_seed_vlines(df, col):
+def plot_flight_timeseries_with_seed_vlines(df, col, seed_locations):
+    date = df.index[0].date()
+    aircraft = df.iloc[:, -1].values[0]
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+
+    if len(seed_locations) > 0:
+        vlines = []
+        for event in seed_locations.index:
+            vlines.append(ax.axvline(event, color="orange"))
+        vlines[0].set_label("Seed")
+    (line,) = ax.plot(df[col], label=aircraft)
+    # ax.grid(True, which="major", linestyle="--", linewidth=0.5, alpha=0.7)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.set_ylabel(col)
+    ax.set_xlabel("Time-UTC")
+    plt.title(f"{date}, {aircraft}")
+    plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
+    plt.show()
+
+
+def plot_day_timeseries_with_seed_vlines(df, col):
     last_column = df.iloc[:, -1]  # last column is named aircraft
     seed_by_plane = [group for _, group in df.groupby(last_column)]
 
@@ -34,7 +55,7 @@ def plot_timeseries_with_seed_vlines(df, col):
                     )
                 )
             vlines[0].set_label(f"Seed: {aircraft}")
-    ax.grid(True, which='major', linestyle='--', linewidth=0.5, alpha=0.7)
+    ax.grid(True, which="major", linestyle="--", linewidth=0.5, alpha=0.7)
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     ax.set_ylabel(col)
     ax.set_xlabel("Time-UTC")
@@ -93,12 +114,14 @@ def plot_scatter_map(df, col):
     plt.show()
 
 
-def plot_hist(df, col):
+def plot_hist(df, col, filename=""):
     plt.figure(figsize=(6, 4))
     plt.hist(df[col], bins=50, edgecolor="k")
     plt.rc("font", size=MEDIUM_SIZE)
     plt.xlabel(col)
     plt.tight_layout()
+    if filename:
+        plt.savefig(filename)
     plt.show()
 
 
@@ -167,9 +190,22 @@ def plot_scatter_gif(df_list, x, y, filename=""):
 
 def plot_bar(df, col):
     fig, ax = plt.subplots(figsize=(14, 6))
-    ax.bar(df.index, df[col])
+    ax.bar(df.index, df[col], edgecolor="black")
     ax.minorticks_on()
-    ax.grid(True, which='major', linestyle='-', linewidth=0.8, alpha=0.8)
-    ax.grid(True, which='minor', linestyle=':', linewidth=0.5, alpha=0.5)
+    ax.grid(True, which="major", linestyle="-", linewidth=0.8, alpha=0.8)
+    ax.grid(True, which="minor", linestyle=":", linewidth=0.5, alpha=0.5)
     ax.set_ylabel(col)
+    plt.rc("font", size=MEDIUM_SIZE)
+    plt.show()
+
+
+def plot_bar_stacked(df, col1, col2):
+    fig, ax = plt.subplots(figsize=(14, 6))
+    ax.bar(df.index, df[col1], label=col1, edgecolor="black")
+    ax.bar(df.index, df[col2], bottom=df[col1], label=col2, edgecolor="black")
+    ax.minorticks_on()
+    ax.grid(True, which="major", linestyle="-", linewidth=0.8, alpha=0.8)
+    ax.grid(True, which="minor", linestyle=":", linewidth=0.5, alpha=0.5)
+    ax.legend()
+    plt.rc("font", size=MEDIUM_SIZE)
     plt.show()

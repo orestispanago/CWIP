@@ -16,7 +16,6 @@ def plot_flight_timeseries_with_seed_vlines(df, col, seed_locations):
     aircraft = df.iloc[:, -1].values[0]
 
     fig, ax = plt.subplots(figsize=(10, 4))
-
     if len(seed_locations) > 0:
         vlines = []
         for event in seed_locations.index:
@@ -44,7 +43,6 @@ def plot_day_timeseries_with_seed_vlines(df, col):
         ]
         aircraft = plane.iloc[:, -1].values[0]
         (line,) = ax.plot(plane[col], label=aircraft)
-
         if len(seed_locations) > 0:
             line_color = line.get_color()
             vlines = []
@@ -133,8 +131,8 @@ def plot_temp_ss_seed_ab(df):
     ss_a = seed_a["ss_total [%]"]
     ss_b = seed_b["ss_total [%]"]
     plt.rc("font", size=MEDIUM_SIZE)
-    plt.plot(ss_a, temp_a, ".", label="seed-a")
-    plt.plot(ss_b, temp_b, ".", label="seed-b")
+    plt.scatter(ss_b, temp_b, edgecolor="k", label="seed-b")
+    plt.scatter(ss_a, temp_a, edgecolor="k", label="seed-a")
     plt.ylabel("Ambient Temperature (C)")
     plt.gca().invert_yaxis()
     plt.xlabel("ss_total [%]")
@@ -142,20 +140,23 @@ def plot_temp_ss_seed_ab(df):
     plt.show()
 
 
-def plot_scatter(df, x, y):
+def plot_scatter(df, x, y, filename=""):
     plt.rc("font", size=MEDIUM_SIZE)
     plt.scatter(df[x], df[y], edgecolor="k")
     # plt.xlim(-3,7)
     plt.xlabel(x)
     plt.ylabel(y)
+    plt.tight_layout()
+    if filename:
+        plt.savefig(filename)
     plt.show()
 
 
 def plot_scatter_gif(df_list, x, y, filename=""):
     ss_min, ss_max = 0, 100
-    temp_min, temp_max = -12, 0
+    temp_min, temp_max = -17, 12
 
-    fig, ax = plt.subplots(figsize=(10, 7))
+    fig, ax = plt.subplots()
     plt.rc("font", size=MEDIUM_SIZE)
 
     def update(frame):
@@ -168,16 +169,21 @@ def plot_scatter_gif(df_list, x, y, filename=""):
 
         past_alpha = 0.2
         current_alpha = 1.0
-        color = "blue"
+        color = "C0"
 
         # Plot all previous frames with faded alpha
         for i in range(frame):
             df = df_list[i]
-            ax.scatter(df[x], df[y], color=color, alpha=past_alpha)
+            ax.scatter(
+                df[x], df[y], color=color, alpha=past_alpha, edgecolor="k"
+            )
         # Plot current frame with full alpha
         df = df_list[frame]
-        ax.scatter(df[x], df[y], color=color, alpha=current_alpha)
+        ax.scatter(
+            df[x], df[y], color=color, alpha=current_alpha, edgecolor="k"
+        )
         ax.set_title(df.index[0].date())
+        fig.tight_layout()
         return []
 
     ani = animation.FuncAnimation(

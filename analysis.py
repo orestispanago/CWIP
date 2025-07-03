@@ -22,7 +22,7 @@ def filter_slamfire(df, time_threshold=2):
 
 def get_rows_before_seed(df, seconds=10):
     seed_locations = df[
-        (df["seed-a [cnt]"].diff() > 0) | (df["seed-b [cnt]"].diff() > 0)
+        (df["seed-a [cnt]"].diff() == 1) | (df["seed-b [cnt]"].diff() ==1)
     ]
     # For each change time, select rows within the 10 minutes before it
     rows_before_changes = []
@@ -35,15 +35,17 @@ def get_rows_before_seed(df, seconds=10):
 
 
 def filter_data(df):
+    print(f"Total: {len(df)}")
     filtered = df.loc[df["lwc [g/m^3]"] >= 0]
+    print(f"LWC >= 0: {len(filtered)}")
     filtered = filtered.loc[filtered["rh [%]"] >= 0]
+    print(f"LWC >= 0 AND RH >= 0: {len(filtered)}")
     return filtered
 
 
 flights = glob.glob("*/*/*/*/")
 
 seed = []
-summaries_list = []
 for flight in flights:
 
     adc_fname = glob.glob(f"{flight}/*adc.csv")[0]
@@ -70,11 +72,9 @@ for flight in flights:
 seed_merged = pd.concat(seed)
 
 summary = pd.read_csv("summary.csv")
-plot_bar(summary, "seed_total")
-plot_bar_stacked(summary, "seed_a", "seed_b")
-
-# seed_merged = seed_merged[seed_merged["LWC (g/m^3)"] > 0]
-# seed_merged = seed_merged[seed_merged["Ambient Temperature (C)"] < 0]
+# plot_bar(summary, "seed_total")
+# plot_bar_stacked(summary, "seed_a", "seed_b")
+# plot_bar(summary, "lwc_median")
 
 
 seed_locations = seed_merged[
@@ -97,15 +97,15 @@ seed_locations = filter_data(seed_locations)
 # plot_hist(seed_locations, "ss_updraft [%]")
 
 
-# slamfires = filter_slamfire(seed_locations, time_threshold=2)
-# print(*slamfires)
+slamfires = filter_slamfire(seed_locations, time_threshold=2)
+print(*slamfires)
 
 # plot_temp_ss_seed_ab(seed_merged)
 
 
-# dfs_by_date = [
-#     group for _, group in seed_locations.groupby(seed_locations.index.date)
-# ]
+dfs_by_date = [
+    group for _, group in seed_locations.groupby(seed_locations.index.date)
+]
 # plot_scatter_gif(
 #     dfs_by_date,
 #     "ss_total [%]",
@@ -113,24 +113,6 @@ seed_locations = filter_data(seed_locations)
 #     filename="temp_ss_scatter.gif",
 # )
 
-
-# plot_scatter(seed_locations, "ss_total [%]", "Ambient Temperature (C)")
-
-# plot_scatter(seed_locations, "temp_amb [C]", "ss_temp [%]")
-
-# plot_scatter(seed_locations, "rh [%]", "ss_rh [%]")
-
-# plot_scatter(seed_locations, "lwc [g/m^3]", "ss_lwc [%]")
-
-# plot_scatter(seed_locations, "wind_w [m/s]", "ss_updraft [%]")
-
-# plot_scatter(seed_locations, "attack [deg]", "ss_updraft [%]")
-
-# plot_scatter(seed_locations, "lwc [g/m^3]", 'accel_down [m/s^2]')
-# plot_scatter(seed_locations, "lwc [g/m^3]", 'wind_w [m/s]')
-# plot_scatter(seed_locations, "accel_down [m/s^2]", 'wind_w [m/s]')
-# plot_scatter(seed_locations, "lwc [g/m^3]", 'temp_amb [C]')
-# plot_scatter(seed_locations, "lwc [g/m^3]", 'rh [%]')
 
 seed_merged_by_date = [
     group for _, group in seed_merged.groupby(seed_merged.index.date)
@@ -145,16 +127,28 @@ seed_merged_by_date = [
 # #     # plot_timeseries_with_seed_vlines(df, "accel_down [m/s^2]")
 # #     plot_timeseries_with_seed_vlines(df, "wind_w [m/s]")
 
-for date in seed_merged_by_date[:1]:
+for date in seed_merged_by_date:
     last_column = date.iloc[:, -1]  # last column is named aircraft
     seed_by_plane = [group for _, group in date.groupby(last_column)]
     for plane in seed_by_plane:
-        seed_locations = get_rows_before_seed(plane)
+        seed_locations_before_seed = get_rows_before_seed(plane)
         plot_flight_timeseries_with_seed_vlines(
-            plane, "LWC (g/m^3)", seed_locations
+            plane, "Fixed - LWC (g/m^3)", seed_locations_before_seed
         )
 
-        x = "Ambient Temperature (C).1"
-        y = "Ambient Temperature (C)"
-        linregress_results = stats.linregress(plane[x], plane[y])
-        plot_scatter(plane, x, y)
+        # plot_flight_timeseries_with_seed_vlines(
+        #     plane, "wind_w [m/s]", seed_locations_before_seed
+        # )
+        # plot_flight_timeseries_with_seed_vlines(
+        #     plane, "rh [%]", seed_locations_before_seed
+        # )
+        # plot_flight_timeseries_with_seed_vlines(
+        #     plane, "ss_total [%]", seed_locations_before_seed
+        # )
+        # plot_flight_timeseries_with_seed_vlines(
+        #     plane, "temp_amb [C]", seed_locations_before_seed
+        # )
+        # x = "Ambient Temperature (C)"
+        # y = "temp_amb [C]"
+        # linregress_results = stats.linregress(plane[x], plane[y])
+        # plot_scatter(plane, x, y)

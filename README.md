@@ -153,3 +153,35 @@
 |               | Longitude         | degrees         | Longitude                                   |
 |               | *(unspecified)*   | degrees         | Magnetic Heading                            |
 
+
+# Issues
+
+### 1. `seed-* [cnt]` counter may not start from 0.
+
+#### Example
+File: `KSA CWIP Files/Fall 2024/CS4 - 448/CWIP-R03_20241026144050.csv`
+
+Column: `seed-b [cnt]` 
+
+To count the flares correctly, the offset has to be subracted from the max `seed-* [cnt]` column value.
+
+
+### 2. `Altitude (m)` starts above 100 m or may have large negative values.
+
+The altitude is not a suitable indicator to determine 
+flight time (engine off - engine on) or 
+air time (landing - take off).
+
+
+### 3. `Man - Acquire (0/1)` does not always work.
+
+This column is described as: "Flag high when new "Zero" command is received"
+
+There are several cases where LWC is zeroed but the flag does not change to 1.
+
+### 4. `lat [deg]` or `lon [deg]` may contain NaN.
+Coordinates may be missing in a some rows, resulting in non-geolocated seed events.
+
+### 5. Missing records.
+Measurements are stored at 1-second intervals, but missing records may cause gaps in the timeseries.
+If `seed-* [cnt]` counter increases across non-consecutive seconds, the seed event is not geolocated.

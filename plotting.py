@@ -37,56 +37,57 @@ def add_seed_lines(ax, seed_locations, label_first=False):
         if label_first and i == 0:
             line.set_label("Seed")
 
+
 def plot_flight_multi_timeseries_with_seed_vlines(df, seed_locations):
     plt.rc("font", size=MEDIUM_SIZE)
     fig, axes = plt.subplots(3, 1, figsize=(16, 9), sharex=True)
-    
-    if len(seed_locations)>0:
+
+    if len(seed_locations) > 0:
         add_seed_lines(axes[0], seed_locations, label_first=True)
         axes[0].legend(loc="upper right")
         for ax in axes[1:]:
             add_seed_lines(ax, seed_locations)
-    
+
     ax1 = axes[0]
     lwc_color = "blue"
     ax1.plot(df.index, df["lwc [g/m^3]"], color=lwc_color)
     ax1.set_ylabel("lwc [g/m^3]", color=lwc_color)
-    
-    ax1.tick_params(axis='y', labelcolor=lwc_color)
+
+    ax1.tick_params(axis="y", labelcolor=lwc_color)
 
     ax2 = axes[1]
     alt_color = "blue"
-    alt_km = df["gps_alt [m]"] /1000
+    alt_km = df["gps_alt [m]"] / 1000
     ax2.plot(df.index, alt_km, color=alt_color)
-    ax2.tick_params(axis='y', labelcolor=alt_color)
+    ax2.tick_params(axis="y", labelcolor=alt_color)
     ax2.set_ylabel("gps_alt [km]", color=alt_color)
 
-    ax3 = ax2.twinx() 
+    ax3 = ax2.twinx()
     temp_color = "red"
     # ax3.set_ylim([-17, 45])
     ax3.axhline(-15, color=temp_color, linestyle="--")
     ax3.axhline(-10, color=temp_color, linestyle="--")
     ax3.axhline(-5, color=temp_color, linestyle="--")
-    ax3.tick_params(axis='y', labelcolor=temp_color)
+    ax3.tick_params(axis="y", labelcolor=temp_color)
     ax3.plot(df.index, df["temp_amb [C]"], color=temp_color)
     ax3.set_ylabel("temp_amb [C]", color=temp_color)
     ax3.invert_yaxis()
 
     ax4 = ax1.twinx()
-    rh_color="red"
+    rh_color = "red"
     ax4.plot(df.index, df["rh [%]"], color=rh_color)
-    ax4.tick_params(axis='y', labelcolor=rh_color)
+    ax4.tick_params(axis="y", labelcolor=rh_color)
     ax4.set_ylabel("rh [%]", color=rh_color)
-    
+
     ax5 = axes[2]
     wind_color = "blue"
     ax5.plot(df.index, df["wind_w [m/s]"], color=wind_color)
-    ax5.tick_params(axis='y', labelcolor=wind_color)
+    ax5.tick_params(axis="y", labelcolor=wind_color)
     ax5.set_ylabel("wind_w [m/s] (+up)", color=wind_color)
-    
+
     ax5.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     ax5.set_xlabel("Time-UTC")
-    
+
     aircraft = df.iloc[:, -1].dropna().values[0]
     start_timestamp = df.index[0]
     date_time = start_timestamp.strftime("%Y%m%d_%H%M%S")
@@ -94,8 +95,8 @@ def plot_flight_multi_timeseries_with_seed_vlines(df, seed_locations):
     plt.tight_layout()
     plt.savefig(f"plots/timeseries/{date_time}_{aircraft}.png")
     plt.show()
-    
-    
+
+
 def plot_day_timeseries_with_seed_vlines(df, col):
     last_column = df.iloc[:, -1]  # last column is named aircraft
     seed_by_plane = [group for _, group in df.groupby(last_column)]
@@ -147,6 +148,100 @@ def plot_3d_colorbar(lat, lon, alt, col):
     cb = fig.colorbar(sc, cax=cbar_ax)
     cb.set_label(col.name)
     ax.set_title(lat.index[0].date())
+    plt.show()
+
+
+def plot_plane_track_with_seeds(df):
+    plt.rc("font", size=MEDIUM_SIZE)
+    df = df.dropna(subset=["lon [deg]", "lat [deg]"])
+    reader = Reader("shapefiles/gadm41_SAU_1.shp")
+    projection = ccrs.Mercator()
+
+    fig, (ax1, ax2) = plt.subplots(
+        1,
+        2,
+        figsize=(14, 5),
+        subplot_kw={"projection": projection},
+        constrained_layout=True,
+    )
+
+    shape_feature = ShapelyFeature(
+        reader.geometries(),
+        ccrs.PlateCarree(),
+        facecolor="none",
+        edgecolor="black",
+    )
+
+    seed_a_events = df["seed-a [cnt]"].diff() > 0
+    seed_b_events = df["seed-b [cnt]"].diff() > 0
+    seed_a_count = len(df[seed_a_events])
+    seed_b_count = len(df[seed_b_events])
+
+    # Get takeoff and landing points
+    takeoff = df.iloc[0]
+    landing = df.iloc[-1]
+
+    # First subplot (full map view)
+    ax1.add_feature(shape_feature)
+    ax1.plot(
+        df["lon [deg]"],
+        df["lat [deg]"],
+        transform=ccrs.PlateCarree(),
+    )
+    ax1.set_extent([34, 56, 16, 33], crs=ccrs.PlateCarree())
+
+    # Second subplot (zoomed to track)
+    ax2.add_feature(shape_feature)
+    ax2.plot(
+        df["lon [deg]"],
+        df["lat [deg]"],
+        transform=ccrs.PlateCarree(),
+    )
+
+    # Plot takeoff and landing points
+    ax2.plot(
+        takeoff["lon [deg]"],
+        takeoff["lat [deg]"],
+        "go",
+        transform=ccrs.PlateCarree(),
+        label="Takeoff",
+    )
+    ax2.plot(
+        landing["lon [deg]"],
+        landing["lat [deg]"],
+        "ro",
+        alpha=0.7,
+        transform=ccrs.PlateCarree(),
+        label="Landing",
+    )
+
+    if seed_a_count > 0:
+        ax2.plot(
+            df.loc[seed_a_events, "lon [deg]"],
+            df.loc[seed_a_events, "lat [deg]"],
+            ".",
+            color="orange",
+            transform=ccrs.PlateCarree(),
+            label=f"seed-a: {seed_a_count}",
+        )
+    if seed_b_count > 0:
+        ax2.plot(
+            df.loc[seed_b_events, "lon [deg]"],
+            df.loc[seed_b_events, "lat [deg]"],
+            ".",
+            color="magenta",
+            transform=ccrs.PlateCarree(),
+            label=f"seed-b: {seed_b_count}",
+        )
+
+    # Place legend outside ax2 (upper right)
+    ax2.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+
+    aircraft = df.iloc[:, -1].dropna().values[0]
+    start_timestamp = df.index[0]
+    date_time = start_timestamp.strftime("%Y%m%d_%H%M%S")
+    fig.suptitle(f"{start_timestamp}, {aircraft}")
+    plt.savefig(f"plots/maps/{date_time}_{aircraft}.png")
     plt.show()
 
 

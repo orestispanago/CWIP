@@ -15,7 +15,7 @@ def resample_1s(df):
     return pd.concat([numeric_resampled, string_resampled], axis=1)
 
 
-for flight in flights[:4]:
+for flight in flights:
 
     adc_fname = glob.glob(f"{flight}/*adc.csv")[0]
     fin_fname = glob.glob(f"{flight}/*fin.csv")[0]
@@ -40,7 +40,7 @@ for flight in flights[:4]:
 
     resampled = resample_1s(merged)
     # plot_flight_multi_timeseries_with_seed_vlines(resampled, seed_locations)
-    plot_scatter_map(resampled, "gps_alt [m]")
+    plot_plane_track_with_seeds(resampled)
 
     # 2D track with seed events in different color
 

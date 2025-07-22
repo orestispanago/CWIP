@@ -1,8 +1,9 @@
 import glob
 import pandas as pd
+from readers import read_wind_csv
 from plotting import *
 
-flights = glob.glob("*/*/*/*/")
+wind_files = glob.glob("*/*/*/*/*wind.csv")
 
 
 def resample_1s(df):
@@ -15,32 +16,23 @@ def resample_1s(df):
     return pd.concat([numeric_resampled, string_resampled], axis=1)
 
 
-for flight in flights:
+for wind_file in wind_files[2:3]:
 
-    adc_fname = glob.glob(f"{flight}/*adc.csv")[0]
-    fin_fname = glob.glob(f"{flight}/*fin.csv")[0]
-    wind_fname = glob.glob(f"{flight}/*wind.csv")[0]
+    wind = read_wind_csv(wind_file)
 
-    fin = pd.read_csv(fin_fname, parse_dates=True, index_col="datetime")
-    wind = pd.read_csv(wind_fname, parse_dates=True, index_col="datetime")
-    adc = pd.read_csv(adc_fname, parse_dates=True, index_col="datetime")
-
-    fin.index = fin.index.round("s")
-    wind.index = wind.index = wind.index.round("s")
-
-    fin = fin[~fin.index.duplicated(keep="first")]
-    wind = wind[~wind.index.duplicated(keep="first")]
-
-    merged = pd.concat([fin, wind], axis=1)
-
-    seed_locations = merged[
-        (merged["seed-a [cnt]"].diff() > 0)
-        | (merged["seed-b [cnt]"].diff() > 0)
+    seed_locations = wind[
+        (wind["seed-a [cnt]"].diff() > 0)
+        | (wind["seed-b [cnt]"].diff() > 0)
     ]
 
-    resampled = resample_1s(merged)
-    # plot_flight_multi_timeseries_with_seed_vlines(resampled, seed_locations)
-    plot_plane_track_with_seeds(resampled)
+    resampled = resample_1s(wind)
+    plot_flight_multi_timeseries_with_seed_vlines(resampled, seed_locations)
+    
+    # resampled = resampled[resampled["lon [deg]"]>30] # Sometimes GPS first location is out of KSA
+    # if len(resampled) >0:
+    #     plot_plane_track_with_seeds(resampled)
+    # else:
+    #     print(f"File: {flight} contains no values after filtering")
 
     # 2D track with seed events in different color
 

@@ -74,7 +74,8 @@ def widden_cal_params(df):
     return df_wide
 
 
-def read_raw_data_parts(fname, to_numeric=False):
+def read_cwip_components(fname, to_numeric=False):
+    """Reads raw CWIP files. Returns ADC, WIND, FIN and metadata components"""
     raw_data = pd.read_csv(
         fname, header=None, names=list(range(69)), low_memory=False
     )
@@ -102,3 +103,11 @@ def read_raw_data_parts(fname, to_numeric=False):
     for df in [adc, fin, wind]:
         df["aircraft"] = aircraft
     return adc, wind, fin, metadata_wide
+
+
+def read_wind_csv(fname):
+    """Reads *wind.csv file"""
+    wind = pd.read_csv(fname, parse_dates=True, index_col="datetime")
+    wind.index = wind.index = wind.index.round("s")
+    wind = wind[~wind.index.duplicated(keep="first")]
+    return wind

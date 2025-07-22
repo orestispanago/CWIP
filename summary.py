@@ -1,9 +1,8 @@
 import pandas as pd
 import glob
 from tqdm import tqdm
-from readers import read_raw_data_parts
+from readers import read_cwip_components
 from quality_control import is_geolocated
-
 
 
 def format_timedelta(td):
@@ -11,6 +10,7 @@ def format_timedelta(td):
     if text.startswith("0 days "):
         return text[7:]
     return text
+
 
 def count_seed_events(df, col):
     df_not_na = df.dropna(subset=[col])
@@ -81,7 +81,7 @@ files = glob.glob("KSA CWIP Files/**/*.csv", recursive=True)
 
 summary_list = []
 for fname in tqdm(files):
-    adc, wind, fin, metadata_wide = read_raw_data_parts(fname, to_numeric=True)
+    adc, wind, fin, metadata_wide = read_cwip_components(fname, to_numeric=True)
     fin.index = fin.index.round("s")
     wind.index = wind.index.round("s")
 

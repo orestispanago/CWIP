@@ -154,6 +154,33 @@
 |               | *(unspecified)*   | degrees         | Magnetic Heading                            |
 
 
+## Summary file
+
+Created by `summary.py`. Each row describes a raw CWIP file.
+
+| **Column**                 | **Type**             | **Description**                                    |
+|----------------------------|--------------------- |----------------------------------------------------|
+| aircraft                   | str                  | Aircraft callsign                                  |
+| start                      | datetime (UTC)       | Start of measurements                              |
+| end                        | datetime (UTC)       | End of measurements                                |
+| duration                   | timedelta (HH:MM:SS) | Duration of measurement period                     |
+| total_seconds              | int (seconds)        | Duration of measurement period in seconds          |
+| missing_seconds            | int                  | Count of missing rows in 1-second time series      |
+| missing_seconds_percentage | float (%)            | Percentage of missing time series rows             |
+| nan_coords                 | int                  | Missing values in latitude or longitude columns    |
+| nan_coords_percentage      | float (%)            | Percentage of missing latitude or longitude values |
+| seed_a                     | int                  | Number of seed-a events                            |
+| seed_b                     | int                  | Number of seed-b events                            |
+| seed_total                 | int                  | Total seed events                                  |
+| seed_a_loc                 | int                  | Count of geolocated seed-a events                  |
+| seed_b_loc                 | int                  | Count of geolocated seed-b events                  |
+| seed_loc_total             | int                  | Total geolocated seed events                       |
+| seed_a_noloc               | int                  | Count of non-geolocated seed-a events              |
+| seed_b_noloc               | int                  | Count of non-geolocated seed-b events              |
+| seed_noloc_total           | int                  | Total non-geolocated seed events                   |
+| cwip_file                  | str                  | Path of raw CWIP file                              |
+
+
 # Issues
 
 ### 1. `seed-* [cnt]` counter may not start from 0.

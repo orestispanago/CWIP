@@ -16,25 +16,29 @@ def resample_1s(df):
     return pd.concat([numeric_resampled, string_resampled], axis=1)
 
 
-for wind_file in wind_files[2:3]:
-
+for wind_file in wind_files:
+    print(wind_file)
     wind = read_wind_csv(wind_file)
 
     seed_locations = wind[
-        (wind["seed-a [cnt]"].diff() > 0)
-        | (wind["seed-b [cnt]"].diff() > 0)
+        (wind["seed-a [cnt]"].diff() > 0) | (wind["seed-b [cnt]"].diff() > 0)
     ]
 
     resampled = resample_1s(wind)
-    plot_flight_multi_timeseries_with_seed_vlines(resampled, seed_locations)
-    
-    # resampled = resampled[resampled["lon [deg]"]>30] # Sometimes GPS first location is out of KSA
-    # if len(resampled) >0:
-    #     plot_plane_track_with_seeds(resampled)
-    # else:
-    #     print(f"File: {flight} contains no values after filtering")
+    # plot_flight_multi_timeseries_with_seed_vlines(resampled, seed_locations)
 
-    # 2D track with seed events in different color
-
-    # Detect cloud penetrations based on LWC
-    # flag as pen_seed and pen_noseed
+    resampled = resampled[
+        resampled["lon [deg]"] > 30
+    ]  # Sometimes GPS first location is out of KSA
+    if len(resampled) > 0:
+        aircraft = resampled.iloc[:, -1].dropna().values[0]
+        start_timestamp = resampled.index[0]
+        date_time = start_timestamp.strftime("%Y%m%d_%H%M%S")
+        plot_plane_track_with_seeds(
+            resampled,
+            start_timestamp,
+            aircraft,
+            filename=f"plots/maps/{date_time}_{aircraft}.png",
+        )
+    else:
+        print(f"File: {wind_file} contains no values after filtering")

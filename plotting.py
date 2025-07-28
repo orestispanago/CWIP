@@ -34,7 +34,9 @@ def plot_flight_timeseries_with_seed_vlines(df, col, seed_locations):
     plt.show()
 
 
-def add_seed_lines(ax, seed_locations, label_first=False, label="seed-a", color="orange"):
+def add_seed_lines(
+    ax, seed_locations, label_first=False, label="seed-a", color="orange"
+):
     for i, event in enumerate(seed_locations.index):
         line = ax.axvline(event, color=color)
         if label_first and i == 0:
@@ -42,24 +44,38 @@ def add_seed_lines(ax, seed_locations, label_first=False, label="seed-a", color=
 
 
 def plot_flight_multi_timeseries_with_seed_vlines(df, seed_locations):
-    
+
     seed_a_events = df[df["seed-a [cnt]"].diff() > 0]
     seed_b_events = df[df["seed-b [cnt]"].diff() > 0]
-    
+
     plt.rc("font", size=MEDIUM_SIZE)
     fig, axes = plt.subplots(3, 1, figsize=(18, 9), sharex=True)
 
     if len(seed_a_events) > 0:
-        add_seed_lines(axes[0], seed_a_events, label_first=True, label="seed-a", color="tab:green")
-        axes[0].legend(loc="upper left",  bbox_to_anchor=(1.05, 1))
+        add_seed_lines(
+            axes[0],
+            seed_a_events,
+            label_first=True,
+            label="seed-a",
+            color="tab:green",
+        )
+        axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
         for ax in axes[1:]:
             add_seed_lines(ax, seed_a_events, label="seed-a", color="tab:green")
-            
-    if len(seed_b_events) >0:
-        add_seed_lines(axes[0], seed_b_events, label_first=True, label="seed-b", color="tab:orange")
-        axes[0].legend(loc="upper left",   bbox_to_anchor=(1.05, 1))
+
+    if len(seed_b_events) > 0:
+        add_seed_lines(
+            axes[0],
+            seed_b_events,
+            label_first=True,
+            label="seed-b",
+            color="tab:orange",
+        )
+        axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
         for ax in axes[1:]:
-            add_seed_lines(ax, seed_b_events, label="seed-b", color="tab:orange")
+            add_seed_lines(
+                ax, seed_b_events, label="seed-b", color="tab:orange"
+            )
 
     ax1 = axes[0]
     lwc_color = "tab:blue"
@@ -164,11 +180,13 @@ def plot_3d_colorbar(lat, lon, alt, col):
     plt.show()
 
 
-def plot_plane_track_with_seeds(df):
+def plot_plane_track_with_seeds(df, start_timestamp, aircraft, filename=""):
     plt.rc("font", size=MEDIUM_SIZE)
     df = df.dropna(subset=["lon [deg]", "lat [deg]"])
     country_reader = Reader("shapefiles/gadm41_SAU_1.shp")
-    radar_multirings_reader = Reader("shapefiles/RCSP_MultiRings_200/RCSP_MultiRings_200.shp")
+    radar_multirings_reader = Reader(
+        "shapefiles/RCSP_MultiRings_200/RCSP_MultiRings_200.shp"
+    )
     radar_df = pd.read_csv("Operations_radar_info.csv")
     provinces = list(country_reader.geometries())
     n_provinces = len(provinces)
@@ -176,14 +194,41 @@ def plot_plane_track_with_seeds(df):
 
     projection = ccrs.Mercator()
 
-    fig, (ax1, ax2) = plt.subplots(
-        1,
-        2,
-        figsize=(14, 5),
-        subplot_kw={"projection": projection},
-        constrained_layout=True,
-    )
+    fig = plt.figure(figsize=(14, 5))
+    gs = fig.add_gridspec(1, 2, width_ratios=[1, 1])
+    ax1 = fig.add_subplot(gs[0, 0], projection=projection)
+    ax2 = fig.add_subplot(gs[0, 1], projection=projection)
 
+    # Compute zoom extent from the flight track
+    padding = 0.5
+    min_lon = df["lon [deg]"].min() - padding
+    max_lon = df["lon [deg]"].max() + padding + 0.7
+    min_lat = df["lat [deg]"].min() - padding
+    max_lat = df["lat [deg]"].max() + padding
+    zoom_extent = [min_lon, max_lon, min_lat, max_lat]
+    ax2.set_extent(zoom_extent, crs=ccrs.PlateCarree())
+
+    # Filter radar locations within the zoom extent
+    radars_in_view = radar_df[
+        (radar_df["Longitude"] >= min_lon)
+        & (radar_df["Longitude"] <= max_lon)
+        & (radar_df["Latitude"] >= min_lat)
+        & (radar_df["Latitude"] <= max_lat)
+    ]
+
+    # Add gridlines and markers
+    for ax in [ax1, ax2]:
+        gl = ax.gridlines(
+            draw_labels=True,
+            crs=ccrs.PlateCarree(),
+            linewidth=0.5,
+            color="gray",
+            alpha=0.5,
+        )
+        gl.top_labels = False
+        gl.right_labels = False
+
+    # Add provinces
     for i, geom in enumerate(provinces):
         ax1.add_geometries(
             [geom],
@@ -202,6 +247,7 @@ def plot_plane_track_with_seeds(df):
             alpha=0.6,  # subtle transparency
         )
 
+    # Plot radar points on ax1
     for _, row in radar_df.iterrows():
         ax1.plot(
             row["Longitude"],
@@ -220,25 +266,34 @@ def plot_plane_track_with_seeds(df):
             fontsize=SMALL_SIZE,
         )
 
+    # Plot radar points on ax2
+    for _, row in radars_in_view.iterrows():
+        ax2.plot(
+            row["Longitude"],
+            row["Latitude"],
+            marker="^",
+            color="blue",
+            transform=ccrs.PlateCarree(),
+        )
+        ax2.text(
+            row["Longitude"] + 0.1,  # offset text a little
+            row["Latitude"],
+            row["Name"],
+            transform=ccrs.PlateCarree(),
+            color="k",
+            fontsize=SMALL_SIZE,
+            path_effects=[pe.withStroke(linewidth=2, foreground="white")],
+        )
+
     shape_feature_radar_multirings = ShapelyFeature(
         radar_multirings_reader.geometries(),
         ccrs.PlateCarree(),
         facecolor="none",
         edgecolor="black",
     )
-    
-    seed_a_events = df["seed-a [cnt]"].diff() > 0
-    seed_b_events = df["seed-b [cnt]"].diff() > 0
-    seed_a_count = len(df[seed_a_events])
-    seed_b_count = len(df[seed_b_events])
 
-    # Get start and stop recording points
-    start_rec = df.iloc[0]
-    stop_rec = df.iloc[-1]
-
-    # First subplot (full map view)
+    # Plot first subplot (full map view)
     ax1.add_feature(shape_feature_radar_multirings)
-    
     ax1.plot(
         df["lon [deg]"],
         df["lat [deg]"],
@@ -246,12 +301,16 @@ def plot_plane_track_with_seeds(df):
     )
     ax1.set_extent([34, 56, 16, 33], crs=ccrs.PlateCarree())
 
-    # Second subplot (zoomed to track)
+    # Plot second subplot (zoomed to track)
     ax2.plot(
         df["lon [deg]"],
         df["lat [deg]"],
         transform=ccrs.PlateCarree(),
     )
+
+    # Get start and stop recording points
+    start_rec = df.iloc[0]
+    stop_rec = df.iloc[-1]
 
     # Plot start and stop points
     ax2.plot(
@@ -270,6 +329,13 @@ def plot_plane_track_with_seeds(df):
         label="rec stop",
     )
 
+    # Calculate seed events
+    seed_a_events = df["seed-a [cnt]"].diff() > 0
+    seed_b_events = df["seed-b [cnt]"].diff() > 0
+    seed_a_count = len(df[seed_a_events])
+    seed_b_count = len(df[seed_b_events])
+
+    # Plot seed events
     if seed_a_count > 0:
         ax2.plot(
             df.loc[seed_a_events, "lon [deg]"],
@@ -289,13 +355,24 @@ def plot_plane_track_with_seeds(df):
             label=f"seed-b: {seed_b_count}",
         )
 
-    ax2.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
+    # ax2.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
 
-    aircraft = df.iloc[:, -1].dropna().values[0]
-    start_timestamp = df.index[0]
-    date_time = start_timestamp.strftime("%Y%m%d_%H%M%S")
     fig.suptitle(f"{start_timestamp}, {aircraft}")
-    plt.savefig(f"plots/maps/{date_time}_{aircraft}.png")
+    # fig.subplots_adjust(wspace=0.05, left=0.05, right=0.88, top=0.92, bottom=0.18)
+    margin = 0.07
+    fig.subplots_adjust(
+        wspace=0.05, left=margin, right=1 - margin, top=0.92, bottom=0.16
+    )
+    handles, labels = ax2.get_legend_handles_labels()
+    fig.legend(
+        handles,
+        labels,
+        loc="lower center",
+        ncol=len(handles),
+        bbox_to_anchor=(0.5, 0.0),
+    )
+    if filename:
+        plt.savefig(filename)
     plt.show()
 
 

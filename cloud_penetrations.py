@@ -89,23 +89,27 @@ def plot_barplot_by_relative_time(df, col, title="", filename=""):
     plt.show()
 
 
-def plot_boxplot_by_relative_time(df, col, title="", filename=""):
+def plot_boxplot_by_relative_time(
+    df, col, title="", filename="", window_seconds=8
+):
     df_rel = df.copy()
-    # df_rel["relative_time_binned"] = df_rel["relative_time"].round().astype(int)
+
+    time_min = -window_seconds // 2
+    time_max = window_seconds // 2
+
+    # Filter by index (relative_time)
+    df_rel = df_rel[(df_rel.index >= time_min) & (df_rel.index <= time_max)]
+
     # Drop bins with no data
-    valid_bins = df_rel.groupby("relative_time")[col].apply(
+    valid_bins = df_rel.groupby(df_rel.index)[col].apply(
         lambda x: x.notna().any()
     )
-    df_rel = df_rel[df_rel["relative_time"].isin(valid_bins[valid_bins].index)]
+    df_rel = df_rel[df_rel.index.isin(valid_bins[valid_bins].index)]
+    df_rel = df_rel.reset_index()
 
     plt.figure(figsize=(12, 6))
     plt.rc("font", size=MEDIUM_SIZE)
-    sns.boxplot(
-        data=df_rel,
-        x="relative_time",
-        y=col,
-        showfliers=False,
-    )
+    sns.boxplot(data=df_rel, x="relative_time", y=col, showfliers=False)
     plt.xlabel("Time relative to seed event (s)")
     plt.ylabel(col)
     plt.title(title)
@@ -169,6 +173,7 @@ window_timedelta = pd.Timedelta(seconds=window_seconds)
 
 all_seed_event_windows_rel_list = []
 
+
 for count, wind_file in enumerate(wind_files):
     print(wind_file)
     # for wind_file in wind_files[2:3]:
@@ -190,13 +195,7 @@ for count, wind_file in enumerate(wind_files):
             wind, seed_locations, window_timedelta
         )
         seed_event_windows_df = time_windows_to_df(seed_event_windows)
-        plot_flight_boxplot_per_seed_event(
-            seed_event_windows_df,
-            "lwc [g/m^3]",
-            start_timestamp,
-            aircraft,
-            filename=f"plots/boxplots/per-seed-event/{date_time}_{aircraft}.png",
-        )
+        # plot_flight_boxplot_per_seed_event( seed_event_windows_df,"lwc [g/m^3]",start_timestamp, aircraft, filename=f"plots/boxplots/per-seed-event/{date_time}_{aircraft}.png",)
 
         # seed_event_example = to_relative_time_index(seed_event_windows[0])
         # plot_multiple_timeseries(seed_event_example, ["lwc [g/m^3]", "rh [%]","temp_amb [C]","wind_w [m/s]", "ss_total [%]"])
@@ -204,24 +203,21 @@ for count, wind_file in enumerate(wind_files):
         seed_event_windows_rel = [
             to_relative_time_index(df) for df in seed_event_windows
         ]
-        seed_event_windows_df_rel = pd.concat(
-            seed_event_windows_rel
-        ).reset_index()
+        seed_event_windows_df_rel = pd.concat(seed_event_windows_rel)
 
         all_seed_event_windows_rel_list.append(seed_event_windows_df_rel)
 
-        plot_boxplot_by_relative_time(
-            seed_event_windows_df_rel,
-            "lwc [g/m^3]",
-            title=f"{start_timestamp}, {aircraft}",
-            filename=f"plots/boxplots/by-relative-time/{date_time}_{aircraft}_lwc.png",
-        )
+        # plot_boxplot_by_relative_time(
+        #     seed_event_windows_df_rel,
+        #     "lwc [g/m^3]",
+        #     title=f"{start_timestamp}, {aircraft}",
+        #     filename=f"plots/boxplots/by-relative-time/{date_time}_{aircraft}_lwc.png",
+        # )
 
-    # else:
-    #     print(f"No seed events for {start_timestamp}, {aircraft}")
-all_seed_event_windows_rel_df = pd.concat(
-    all_seed_event_windows_rel_list
-).reset_index()
+    else:
+        print(f"No seed events for {start_timestamp}, {aircraft}")
+
+all_seed_event_windows_rel_df = pd.concat(all_seed_event_windows_rel_list)
 plot_boxplot_by_relative_time(
     all_seed_event_windows_rel_df,
     "lwc [g/m^3]",

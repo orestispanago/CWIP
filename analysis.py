@@ -40,6 +40,8 @@ def filter_data(df):
     print(f"LWC >= 0: {len(filtered)}")
     filtered = filtered.loc[filtered["rh [%]"] >= 0]
     print(f"LWC >= 0 AND RH >= 0: {len(filtered)}")
+    filtered = filtered.loc[filtered["temp_amb [C]"] < 0]
+    print(f"LWC >= 0 AND RH >= 0 and T <0 : {len(filtered)}")
     return filtered
 
 
@@ -125,14 +127,14 @@ seed_merged_by_date = [
     # plot_day_timeseries_with_seed_vlines(df, "gps_alt [m]")
     # plot_day_timeseries_with_seed_vlines(df, "temp_amb [C]")
 
-for date in seed_merged_by_date:
-    last_column = date.iloc[:, -1]  # last column is named aircraft
-    seed_by_plane = [group for _, group in date.groupby(last_column)]
-    for plane in seed_by_plane:
-        seed_locations_before_seed = get_rows_before_seed(plane)
-        plot_flight_timeseries_with_seed_vlines(
-            plane, "lwc [g/m^3]", seed_locations_before_seed
-        )
+# for date in seed_merged_by_date:
+#     last_column = date.iloc[:, -1]  # last column is named aircraft
+#     seed_by_plane = [group for _, group in date.groupby(last_column)]
+#     for plane in seed_by_plane:
+#         seed_locations_before_seed = get_rows_before_seed(plane)
+#         plot_flight_timeseries_with_seed_vlines(
+#             plane, "lwc [g/m^3]", seed_locations_before_seed
+#         )
 
         # plot_flight_timeseries_with_seed_vlines(
         #     plane, "wind_w [m/s]", seed_locations_before_seed
@@ -150,3 +152,6 @@ for date in seed_merged_by_date:
         # y = "temp_amb [C]"
         # linregress_results = stats.linregress(plane[x], plane[y])
         # plot_scatter(plane, x, y)
+
+
+plot_scatter(seed_locations, "ss_total [%]", "temp_amb [C]")

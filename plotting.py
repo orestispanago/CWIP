@@ -183,11 +183,11 @@ def plot_3d_colorbar(lat, lon, alt, col):
 def plot_plane_track_with_seeds(df, start_timestamp, aircraft, filename=""):
     plt.rc("font", size=MEDIUM_SIZE)
     df = df.dropna(subset=["lon [deg]", "lat [deg]"])
-    country_reader = Reader("shapefiles/gadm41_SAU_1.shp")
+    country_reader = Reader("shapefiles/KSA/gadm41_SAU_1.shp")
     radar_multirings_reader = Reader(
         "shapefiles/RCSP_MultiRings_200/RCSP_MultiRings_200.shp"
     )
-    radar_df = pd.read_csv("Operations_radar_info.csv")
+    radar_df = pd.read_csv("shapefiles/operations_radar_locations.csv")
     provinces = list(country_reader.geometries())
     n_provinces = len(provinces)
     colors = cm.get_cmap("tab20", n_provinces)  # or "Set3", "tab10", etc.

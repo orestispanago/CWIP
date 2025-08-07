@@ -38,7 +38,7 @@ for wind_file in wind_files:
             resampled,
             start_timestamp,
             aircraft,
-            filename=f"plots/maps/{date_time}_{aircraft}.png",
+            filename=f"plots/maps/flights/{date_time}_{aircraft}.png",
         )
     else:
         print(f"File: {wind_file} contains no values after filtering")

@@ -22,7 +22,7 @@ def filter_slamfire(df, time_threshold=2):
 
 def get_rows_before_seed(df, seconds=10):
     seed_locations = df[
-        (df["seed-a [cnt]"].diff() == 1) | (df["seed-b [cnt]"].diff() ==1)
+        (df["seed-a [cnt]"].diff() == 1) | (df["seed-b [cnt]"].diff() == 1)
     ]
     # For each change time, select rows within the 10 minutes before it
     rows_before_changes = []
@@ -123,9 +123,9 @@ seed_merged_by_date = [
 
 # for df in seed_merged_by_date:
 #     plot_day_timeseries_with_seed_vlines(df, "temp_amb [C]")
-    # plot_day_timeseries_with_seed_vlines(df, "lwc [g/m^3]")
-    # plot_day_timeseries_with_seed_vlines(df, "gps_alt [m]")
-    # plot_day_timeseries_with_seed_vlines(df, "temp_amb [C]")
+# plot_day_timeseries_with_seed_vlines(df, "lwc [g/m^3]")
+# plot_day_timeseries_with_seed_vlines(df, "gps_alt [m]")
+# plot_day_timeseries_with_seed_vlines(df, "temp_amb [C]")
 
 # for date in seed_merged_by_date:
 #     last_column = date.iloc[:, -1]  # last column is named aircraft
@@ -136,22 +136,22 @@ seed_merged_by_date = [
 #             plane, "lwc [g/m^3]", seed_locations_before_seed
 #         )
 
-        # plot_flight_timeseries_with_seed_vlines(
-        #     plane, "wind_w [m/s]", seed_locations_before_seed
-        # )
-        # plot_flight_timeseries_with_seed_vlines(
-        #     plane, "rh [%]", seed_locations_before_seed
-        # )
-        # plot_flight_timeseries_with_seed_vlines(
-        #     plane, "ss_total [%]", seed_locations_before_seed
-        # )
-        # plot_flight_timeseries_with_seed_vlines(
-        #     plane, "temp_amb [C]", seed_locations_before_seed
-        # )
-        # x = "Ambient Temperature (C)"
-        # y = "temp_amb [C]"
-        # linregress_results = stats.linregress(plane[x], plane[y])
-        # plot_scatter(plane, x, y)
+# plot_flight_timeseries_with_seed_vlines(
+#     plane, "wind_w [m/s]", seed_locations_before_seed
+# )
+# plot_flight_timeseries_with_seed_vlines(
+#     plane, "rh [%]", seed_locations_before_seed
+# )
+# plot_flight_timeseries_with_seed_vlines(
+#     plane, "ss_total [%]", seed_locations_before_seed
+# )
+# plot_flight_timeseries_with_seed_vlines(
+#     plane, "temp_amb [C]", seed_locations_before_seed
+# )
+# x = "Ambient Temperature (C)"
+# y = "temp_amb [C]"
+# linregress_results = stats.linregress(plane[x], plane[y])
+# plot_scatter(plane, x, y)
 
 
 plot_scatter(seed_locations, "ss_total [%]", "temp_amb [C]")

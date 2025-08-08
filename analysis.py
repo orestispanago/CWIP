@@ -1,6 +1,6 @@
 import glob
 import pandas as pd
-from plotting import *
+from analysis_plotting import *
 from scipy import stats
 
 

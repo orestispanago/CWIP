@@ -5,7 +5,11 @@ from matplotlib.patches import Patch
 from cartopy.io.shapereader import Reader
 from cartopy.feature import ShapelyFeature
 import matplotlib.patheffects as pe
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+from matplotlib.ticker import FormatStrFormatter
 import pandas as pd
+import numpy as np
+import numpy.ma as ma
 
 SMALL_SIZE = 8
 MEDIUM_SIZE = 14
@@ -18,23 +22,27 @@ radar_df = pd.read_csv("shapefiles/operations_radar_locations.csv")
 provinces = list(country_reader.geometries())
 n_provinces = len(provinces)
 province_colors = plt.get_cmap("tab20", n_provinces)  # or "Set3", "tab10", etc.
-projection = ccrs.Mercator()
+projection = ccrs.PlateCarree()
 
 
-def create_map_axes():
-    plt.figure(figsize=(8, 7))
+def create_map_axes(facecolor=""):
+    fig, ax = plt.subplots(
+        figsize=(8, 7), subplot_kw=dict(projection=projection)
+    )
     plt.rc("font", size=MEDIUM_SIZE)
     ax = plt.axes(projection=projection)
-    ax.set_extent([34, 56, 16, 33], crs=ccrs.PlateCarree())
-    return ax
+    ax.set_extent([34, 56, 16, 33], crs=projection)
+    if facecolor:
+        ax.set_facecolor(facecolor)
+    return fig, ax
 
 
-def plot_provinces(ax, facecolors=None, zorder=0):
+def plot_provinces(ax, facecolors="white", alpha=0.6, zorder=0):
     for i, geom in enumerate(provinces):
-        if facecolors:
+        if facecolors == "provinces":
             facecolor = province_colors(i)
         else:
-            facecolor = "white"
+            facecolor = facecolors
         ax.add_geometries(
             [geom],
             crs=ccrs.PlateCarree(),
@@ -42,7 +50,7 @@ def plot_provinces(ax, facecolors=None, zorder=0):
             edgecolor="gray",
             linewidth=0.5,
             zorder=zorder,
-            alpha=0.6,
+            alpha=alpha,
         )
 
 
@@ -93,9 +101,9 @@ def plot_gridlines_and_labels(ax):
 
 
 def plot_map_seed_regions(df, sep_line=None, filename=""):
-    ax = create_map_axes()
+    fig, ax = create_map_axes()
     plot_gridlines_and_labels(ax)
-    plot_provinces(ax, facecolors=province_colors)
+    plot_provinces(ax, facecolors="provinces")
     plot_radar_locations(ax)
     plot_multirings(ax)
 
@@ -136,24 +144,14 @@ def plot_map_seed_regions(df, sep_line=None, filename=""):
 
 
 def plot_map_seed_periods(df, sep_line=None, filename=""):
-    ax = create_map_axes()
+    fig, ax = create_map_axes()
     plot_gridlines_and_labels(ax)
-    plot_provinces(ax, facecolors=province_colors)
+    plot_provinces(ax, facecolors="provinces")
     plot_radar_locations(ax)
     plot_multirings(ax)
-    # Plot the diagonal line
-    if sep_line:
-        ax.plot(
-            sep_line.lons,
-            sep_line.lats,
-            color="black",
-            linewidth=2,
-            linestyle="--",
-            transform=ccrs.PlateCarree(),
-        )
     region_colors = {
-        "Spring": "red",
-        "Fall": "green",
+        "Spring 2025": "red",
+        "Fall 2024": "green",
     }
     colors = df["period"].map(region_colors)
     ax.scatter(
@@ -178,15 +176,15 @@ def plot_map_seed_periods(df, sep_line=None, filename=""):
 
 
 def plot_map_kde_periods(df, filename=""):
-    ax = create_map_axes()
+    fig, ax = create_map_axes()
     plot_gridlines_and_labels(ax)
-    plot_provinces(ax, facecolors=province_colors)
+    plot_provinces(ax, facecolors="provinces")
     plot_radar_locations(ax, labels=True)
     plot_multirings(ax)
 
     period_colors = {
-        "Spring": "green",
-        "Fall": "red",
+        "Spring 2025": "green",
+        "Fall 2024": "red",
     }
     legend_handles = []
     for period, color in period_colors.items():
@@ -209,4 +207,92 @@ def plot_map_kde_periods(df, filename=""):
     plt.tight_layout()
     if filename:
         plt.savefig(filename)
+    plt.show()
+
+
+def plot_map_kde_single_period(df, filename="", title=""):
+    fig, ax = create_map_axes()
+    plot_gridlines_and_labels(ax)
+    plot_provinces(ax)
+    plot_radar_locations(ax, labels=True)
+    plot_multirings(ax)
+
+    # KDE plot
+    kde = sns.kdeplot(
+        x=df["lon [deg]"],
+        y=df["lat [deg]"],
+        ax=ax,
+        fill=True,
+        cmap="hot",
+        bw_adjust=0.5,
+        thresh=0.05,
+        levels=10,
+    )
+
+    plt.title(title)
+
+    # Add colorbar
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="3%", pad=0.05, axes_class=plt.Axes)
+
+    # Create a ScalarMappable for the colorbar
+    norm = plt.Normalize(vmin=0, vmax=1)
+    sm = plt.cm.ScalarMappable(cmap="hot", norm=norm)
+    sm.set_array([])
+
+    # Create colorbar using the ScalarMappable
+    cbar = fig.colorbar(sm, cax=cax)
+    # cbar.set_ticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
+    cbar.ax.yaxis.set_major_formatter(FormatStrFormatter("%.2f"))
+    cbar.set_label("Seed event density", rotation=270, labelpad=15)
+    plt.tight_layout()
+    if filename:
+        plt.savefig(filename, bbox_inches="tight")
+    plt.show()
+
+
+def plot_grid_percentage(df, grid=0.5, filename="", title=""):
+    fig, ax = create_map_axes()
+    plot_gridlines_and_labels(ax)
+    plot_provinces(ax)
+    plot_radar_locations(ax, labels=True)
+    plot_multirings(ax)
+
+    # Define grid resolution (e.g., 0.5° × 0.5° cells)
+    grid_size = grid
+    lon_bins = np.arange(34, 56 + grid_size, grid_size)
+    lat_bins = np.arange(16, 33 + grid_size, grid_size)
+
+    # Count flares per grid cell
+    counts, xedges, yedges = np.histogram2d(
+        df["lon [deg]"], df["lat [deg]"], bins=[lon_bins, lat_bins]
+    )
+
+    # Calculate percentages (flares per cell / total flares)
+    total_flares = counts.sum()
+    percentages = (counts / total_flares) * 100  # Convert to %
+    percentages_masked = ma.masked_where(percentages == 0, percentages)
+
+    mesh = ax.pcolormesh(
+        xedges,
+        yedges,
+        percentages_masked.T,
+        cmap="hot",
+        shading="auto",
+        transform=ccrs.PlateCarree(),
+        vmin=0,
+        vmax=20,
+    )
+    plt.title(title)
+    # Add colorbar
+    divider = make_axes_locatable(ax)
+    cax = divider.append_axes("right", size="3%", pad=0.05, axes_class=plt.Axes)
+    cbar = fig.colorbar(mesh, cax=cax)
+    cbar.set_label(
+        "Seed events per cell / total (%)", rotation=270, labelpad=15
+    )
+
+    plt.tight_layout()
+    if filename:
+        plt.savefig(filename, bbox_inches="tight")
     plt.show()

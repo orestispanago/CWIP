@@ -1,19 +1,13 @@
 import glob
 import pandas as pd
 from readers import read_wind_csv
-from plotting import *
+from flights_maps_plotting import *
+from flights_timeseries_plotting import (
+    plot_flight_multi_timeseries_with_seed_vlines,
+)
+from utils import resample_1s
 
 wind_files = glob.glob("*/*/*/*/*wind.csv")
-
-
-def resample_1s(df):
-    numeric_cols = df.select_dtypes(include="number").columns
-    string_cols = df.select_dtypes(exclude="number").columns
-    # Resample numeric and string parts separately
-    numeric_resampled = df[numeric_cols].resample("1s").mean()
-    string_resampled = df[string_cols].resample("1s").first()  # or .last()
-    # Combine them back
-    return pd.concat([numeric_resampled, string_resampled], axis=1)
 
 
 for wind_file in wind_files:

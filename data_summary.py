@@ -1,9 +1,9 @@
 import pandas as pd
 import glob
 from tqdm import tqdm
-from readers import read_cwip_components
-from quality_control import is_geolocated
-
+from data_readers import read_cwip_components
+from data_quality_control import is_geolocated
+from utils import resample_1s, select_cloud_penetrations
 
 def format_timedelta(td):
     text = str(td)
@@ -25,13 +25,7 @@ def calc_summary(df, fname):
     last = df.index[-1]
     duration = last - first  # it is not flight time or air time
 
-    numeric_cols = df.select_dtypes(include="number").columns
-    string_cols = df.select_dtypes(exclude="number").columns
-    # Resample numeric and string parts separately
-    numeric_resampled = df[numeric_cols].resample("1s").mean()
-    string_resampled = df[string_cols].resample("1s").first()  # or .last()
-    # Combine them back
-    resampled_df = pd.concat([numeric_resampled, string_resampled], axis=1)
+    resampled_df = resample_1s(df)
 
     total_seconds = len(resampled_df)
     missing_seconds = int(resampled_df.isna().all(axis=1).sum())
@@ -51,6 +45,12 @@ def calc_summary(df, fname):
     seed_a_noloc = seed_a - seed_a_loc
     seed_b_noloc = seed_b - seed_b_loc
     seed_noloc_total = seed_a_noloc + seed_b_noloc
+    
+    penetrations02 = len(select_cloud_penetrations(df, lwc_threshold=0.2))
+    penetrations025 = len(select_cloud_penetrations(df, lwc_threshold=0.25))
+    penetrations03 = len(select_cloud_penetrations(df, lwc_threshold=0.3))
+    penetrations035 = len(select_cloud_penetrations(df, lwc_threshold=0.35))
+    penetrations04 = len(select_cloud_penetrations(df, lwc_threshold=0.4))
 
     summary = {
         "aircraft": aircraft,
@@ -71,6 +71,11 @@ def calc_summary(df, fname):
         "seed_a_noloc": seed_a_noloc,
         "seed_b_noloc": seed_b_noloc,
         "seed_noloc_total": seed_noloc_total,
+        "penetrations02":penetrations02,
+        "penetrations025":penetrations025,
+        "penetrations03":penetrations03,
+        "penetrations035":penetrations035,
+        "penetrations04":penetrations04,
         "cwip_file": fname,
     }
     summary_df = pd.DataFrame([summary])

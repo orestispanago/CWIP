@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
-
+import matplotlib.animation as animation
+import numpy as np
 
 SMALL_SIZE = 8
 MEDIUM_SIZE = 14
@@ -90,23 +91,64 @@ def plot_scatter_gif(df_list, x, y, filename=""):
 
 
 def plot_bar(df, col):
+    plt.rc("font", size=MEDIUM_SIZE)
     fig, ax = plt.subplots(figsize=(14, 6))
     ax.bar(df.index, df[col], edgecolor="black")
     ax.minorticks_on()
     ax.grid(True, which="major", linestyle="-", linewidth=0.8, alpha=0.8)
     ax.grid(True, which="minor", linestyle=":", linewidth=0.5, alpha=0.5)
     ax.set_ylabel(col)
-    plt.rc("font", size=MEDIUM_SIZE)
     plt.show()
 
 
-def plot_bar_stacked(df, col1, col2):
+def plot_bar_stacked(df, col1, col2, ylabel=""):
+    plt.rc("font", size=MEDIUM_SIZE)
     fig, ax = plt.subplots(figsize=(14, 6))
     ax.bar(df.index, df[col1], label=col1, edgecolor="black")
     ax.bar(df.index, df[col2], bottom=df[col1], label=col2, edgecolor="black")
     ax.minorticks_on()
     ax.grid(True, which="major", linestyle="-", linewidth=0.8, alpha=0.8)
     ax.grid(True, which="minor", linestyle=":", linewidth=0.5, alpha=0.5)
+    ax.set_ylabel(ylabel)
     ax.legend()
+    plt.show()
+
+def plot_bar_multiple_side_by_side(df, columns, ylabel=""):
     plt.rc("font", size=MEDIUM_SIZE)
+    fig, ax = plt.subplots(figsize=(60, 5))
+    
+    x = np.arange(len(df.index))  # numeric positions for bars
+    width = 0.8 / len(columns)    # total width split across columns
+
+    for i, col in enumerate(columns):
+        ax.bar(
+            x + i * width, 
+            df[col], 
+            width=width, 
+            label=col, 
+            edgecolor="black", 
+            alpha=0.7
+        )
+
+    # ax.minorticks_on()
+    ax.grid(True, which="major", linestyle="-", linewidth=0.8, alpha=0.8)
+    ax.grid(True, which="minor", linestyle=":", linewidth=0.5, alpha=0.5)
+    ax.set_ylabel(ylabel)
+    ax.set_xticks(x + width * (len(columns)-1)/2)
+    ax.set_xticklabels(df.index)
+    ax.legend()
+    plt.show()
+    
+def plot_lines(df, columns):
+    plt.rc("font", size=MEDIUM_SIZE)
+    fig, ax = plt.subplots(figsize=(14, 6))
+    for col in columns:
+        ax.plot(df.index, df[col], marker="o", label=col, linewidth=3)
+    plt.legend()
+    plt.show()
+    
+def area_plot(df, columns, ylabel=""):
+    df[columns].plot.area(figsize=(14, 6), alpha=0.6)
+    plt.ylabel(ylabel)
+    plt.grid(True, alpha=0.5)
     plt.show()

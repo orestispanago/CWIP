@@ -1,7 +1,7 @@
 from tqdm import tqdm
 import glob
 import os
-from readers import read_cwip_components
+from .data_readers import read_cwip_components
 
 
 def create_dest_path(fname, output_dir):
@@ -26,7 +26,7 @@ def parts_to_csv(fname, adc, wind, fin, metadata_wide, output_dir="split"):
     metadata_wide.to_csv(f"{dest_path}_metadata.csv", index=False)
 
 
-files = glob.glob("KSA CWIP Files/**/*.csv", recursive=True)
+files = glob.glob("KSA CWIP Files/**/*a.csv", recursive=True)
 
 for fname in tqdm(files):
     adc, wind, fin, metadata_wide = read_cwip_components(fname)

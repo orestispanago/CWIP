@@ -1,6 +1,6 @@
 import glob
 import pandas as pd
-from analysis_plotting import plot_scatter
+from plotting_analysis import plot_scatter
 
 
 flights = glob.glob("*/*/*/*/")

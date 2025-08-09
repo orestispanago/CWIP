@@ -1,6 +1,6 @@
 import glob
 import pandas as pd
-from analysis_plotting import *
+from plotting_analysis import *
 from scipy import stats
 
 
@@ -154,4 +154,4 @@ seed_merged_by_date = [
 # plot_scatter(plane, x, y)
 
 
-plot_scatter(seed_locations, "ss_total [%]", "temp_amb [C]")
+# plot_scatter(seed_locations, "ss_total [%]", "temp_amb [C]")

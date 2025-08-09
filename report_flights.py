@@ -1,11 +1,10 @@
 import glob
-import pandas as pd
-from readers import read_wind_csv
-from flights_maps_plotting import *
-from flights_timeseries_plotting import (
+from data_readers import read_wind_csv
+from plotting_flight_maps import plot_plane_track_with_seeds
+from plotting_flight_timeseries import (
     plot_flight_multi_timeseries_with_seed_vlines,
 )
-from utils import resample_1s
+from utils import resample_1s, select_seed_locations
 
 wind_files = glob.glob("*/*/*/*/*wind.csv")
 
@@ -14,12 +13,10 @@ for wind_file in wind_files:
     print(wind_file)
     wind = read_wind_csv(wind_file)
 
-    seed_locations = wind[
-        (wind["seed-a [cnt]"].diff() > 0) | (wind["seed-b [cnt]"].diff() > 0)
-    ]
+    seed_locations = select_seed_locations(wind)
 
     resampled = resample_1s(wind)
-    # plot_flight_multi_timeseries_with_seed_vlines(resampled, seed_locations)
+    plot_flight_multi_timeseries_with_seed_vlines(resampled, seed_locations)
 
     resampled = resampled[
         resampled["lon [deg]"] > 30

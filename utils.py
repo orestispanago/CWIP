@@ -15,3 +15,7 @@ def select_seed_locations(df):
     return df[
         (df["seed-a [cnt]"].diff() > 0) | (df["seed-b [cnt]"].diff() > 0)
     ].copy()
+
+
+def select_cloud_penetrations(df, lwc_threshold=0.3):
+    return df[df["lwc [g/m^3]"].diff() > lwc_threshold]

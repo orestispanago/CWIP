@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 from cartopy.feature import ShapelyFeature
-import matplotlib.animation as animation
 import matplotlib.dates as mdates
 import matplotlib.patheffects as pe
 import pandas as pd

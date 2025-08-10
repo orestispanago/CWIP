@@ -1,5 +1,5 @@
+import os
 import pandas as pd
-
 
 def read_col_names(fname, row=26):
     header = pd.read_csv(fname, header=None, skiprows=row, nrows=1, sep=",")
@@ -99,9 +99,6 @@ def read_cwip_components(fname, to_numeric=False):
 
     metadata_wide = pd.concat([metadata_partial_wide, cal_params_wide], axis=1)
 
-    aircraft = metadata_wide["AircraftID"].values[0]
-    for df in [adc, fin, wind]:
-        df["aircraft"] = aircraft
     return adc, wind, fin, metadata_wide
 
 

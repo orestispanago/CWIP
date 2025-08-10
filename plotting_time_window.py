@@ -4,9 +4,20 @@ import os
 
 
 MEDIUM_SIZE = 14
+COLUMN_LABELS = {
+    "lwc [g/m^3]": r"$LWC \ (g/m^{3})$",
+    "rh [%]": "RH (%)",
+    "wind_w [m/s]": r"$wind_{up} \ (m/s)$",
+    "ss_total [%]": "Seed score (%)",
+    "temp_amb [C]": "$T_{amb} \ (\degree C)$" 
+}
 
+def col_to_label(col):
+    if col not in COLUMN_LABELS:
+        print(f"Note: {col} not fount in COLUMN_LABELS")
+    return COLUMN_LABELS.get(col, col)
 
-def plot_multiple_timeseries(df, columns, xlabel=""):
+def plot_multiple_timeseries(df, columns, xlabel="", filename="", title=""):
     n = len(columns)
     fig, axes = plt.subplots(n, 1, figsize=(10, 2 * n), sharex=True)
     plt.rc("font", size=MEDIUM_SIZE)
@@ -14,16 +25,29 @@ def plot_multiple_timeseries(df, columns, xlabel=""):
         axes = [axes]
     for ax, col in zip(axes, columns):
         ax.plot(df.index, df[col])
-        ax.set_ylabel(col)
+        ax.set_ylabel(col_to_label(col))
         ax.axvline(x=0, color="red", linestyle="--")
     axes[-1].set_xlabel(xlabel)
+    plt.suptitle(title)
     plt.tight_layout()
+    if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        plt.savefig(filename, bbox_inches="tight")
     plt.show()
 
 
-def plot_flight_boxplot_per_seed_event(
-    df, col, start_timestamp, aircraft, window_seconds, filename=""
+def plot_flight_boxplots_by_event(
+    df,
+    col,
+    start_timestamp,
+    aircraft,
+    window_seconds,
+    filename="",
+    xlabel="Seed events",
+    title=""
 ):
+    """ Plots a single plot for all flight 
+    where each event is represented by a boxplot """
     time_windows_clean = df.dropna(subset=[col])
     num_time_windows = max(df["window_count"])
     if num_time_windows > 0:
@@ -31,20 +55,23 @@ def plot_flight_boxplot_per_seed_event(
         height = 5
         plt.figure(figsize=(width, height))
         plt.rc("font", size=MEDIUM_SIZE)
-        plt.xlabel("Seed events")
-        plt.ylabel(col)
-        plt.title(f"{start_timestamp}, time window: {window_seconds} s")
+        plt.xlabel(xlabel)
+        plt.ylabel(col_to_label(col))
+        plt.title(title)
         sns.boxplot(
             data=time_windows_clean, x="window_count", y=col, showfliers=False
         )
         if filename:
-            plt.savefig(filename)
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+            plt.savefig(filename, bbox_inches="tight")
         plt.show()
     else:
-        print(f"No values to plot for {start_timestamp}, {aircraft}")
+        print(f"No values to plot for {aircraft}, {start_timestamp}")
 
 
-def plot_barplot_by_relative_time(df, col, title="", filename=""):
+def plot_barplot_by_relative_time(
+    df, col, title="", filename="", xlabel="Time relative to seed event (s)"
+):
     plt.figure(figsize=(12, 6))
     plt.rc("font", size=MEDIUM_SIZE)
     sns.barplot(
@@ -54,18 +81,23 @@ def plot_barplot_by_relative_time(df, col, title="", filename=""):
         # estimator="max",
         # showfliers=False,
     )
-    plt.xlabel("Time relative to seed event (s)")
-    plt.ylabel(col)
+    plt.xlabel(xlabel)
+    plt.ylabel(col_to_label(col))
     plt.title(title)
     plt.suptitle("")
     if filename:
         os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+        plt.savefig(filename, bbox_inches="tight")
     plt.show()
 
 
 def plot_boxplot_by_relative_time(
-    df, col, title="", filename="", window_seconds=8
+    df,
+    col,
+    title="",
+    filename="",
+    window_seconds=8,
+    xlabel="Time relative to seed event (s)",
 ):
     df_rel = df.copy()
 
@@ -85,12 +117,12 @@ def plot_boxplot_by_relative_time(
     plt.figure(figsize=(12, 6))
     plt.rc("font", size=MEDIUM_SIZE)
     sns.boxplot(data=df_rel, x="relative_time", y=col, showfliers=False)
-    plt.xlabel("Time relative to seed event (s)")
-    plt.ylabel(col)
+    plt.xlabel(xlabel)
+    plt.ylabel(col_to_label(col))
     plt.title(title)
     if filename:
         os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+        plt.savefig(filename, bbox_inches="tight")
     plt.show()
 
 

@@ -3,7 +3,7 @@ import pandas as pd
 
 def select_time_windows(df, center_times, window_timedelta):
     time_windows = []
-    for count, time in enumerate(center_times.index):
+    for count, time in enumerate(center_times.index, start=1):
         start = time - window_timedelta / 2
         end = time + window_timedelta / 2
         time_window = df[start:end].copy()

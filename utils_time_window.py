@@ -29,5 +29,6 @@ def to_relative_time_index(df):
     df_rel["relative_time"] = (
         (df_rel.index - center_time).total_seconds().astype(int)
     )
+    df_rel = df_rel.reset_index()
     df_rel = df_rel.set_index("relative_time")
     return df_rel

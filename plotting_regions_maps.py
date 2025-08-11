@@ -10,9 +10,9 @@ from matplotlib.ticker import FormatStrFormatter
 import pandas as pd
 import numpy as np
 import numpy.ma as ma
+from utils_plotting import SMALL_SIZE, MEDIUM_SIZE
 
-SMALL_SIZE = 8
-MEDIUM_SIZE = 14
+
 
 country_reader = Reader("shapefiles/KSA/gadm41_SAU_1.shp")
 radar_multirings_reader = Reader(

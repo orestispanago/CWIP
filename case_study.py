@@ -5,9 +5,13 @@ import matplotlib.pyplot as plt
 from pandas.errors import EmptyDataError
 
 from data_readers import read_wind_csv
-from utils import select_seed_locations, get_index_middle, resample_1s
-from plotting_cloud_penetrations import (
+from utils import select_seed_locations, resample_1s
+from plotting_case_study import (
     plot_flight_timeseries_with_seed_and_penetration_vlines,
+    plot_bar_pens_per_window,
+    plot_boxplot_pens_seeds,
+    plot_pen_window_timeseries,
+    plot_seed_window_timeseries,
 )
 from utils_summary import calc_summary
 from utils_time_window import (
@@ -20,11 +24,33 @@ from plotting_time_window import (
     plot_flight_boxplots_by_event,
     plot_multiple_timeseries,
 )
+from plotting_flight_timeseries import (
+    plot_flight_multi_timeseries_with_seed_vlines,
+)
+from plotting_case_study_map import plot_flight_track_with_pens_and_seeds
+
 
 
 LWC_THRESHOLD = 0.3
 WINDOW_SEC = 8
 LWC_THRESHOLD_RANGE = np.arange(0.2, 1.0, 0.02)  # start, stop, step
+
+
+def get_map_extent(df, offset=0.01):
+    xmin = df["lon [deg]"].min() - offset
+    xmax = df["lon [deg]"].max() + offset
+    ymin = df["lat [deg]"].min() - offset
+    ymax = df["lat [deg]"].max() + offset
+    return [xmin, xmax, ymin, ymax]
+
+
+def describe_time_windows(seeds, penetrations, pens_with_seed):
+    description = {
+        "seeds": len(seeds),
+        "penetrations": len(penetrations),
+        "penetrations with seeds": len(pens_with_seed),
+    }
+    return pd.DataFrame([description]).T
 
 
 def plot_thresholds(wind, seed_locations):
@@ -47,32 +73,6 @@ def plot_thresholds(wind, seed_locations):
     plt.show()
 
 
-def plot_event_timeseries(windows_list, aircraft, dt_str, event_type):
-    """Plot multi-timeseries for each event window."""
-    initials = event_type[:2]
-    cols = [
-        "lwc [g/m^3]",
-        "rh [%]",
-        "temp_amb [C]",
-        "wind_w [m/s]",
-        "ss_total [%]",
-    ]
-    for win in windows_list:
-        event_id = win["window_count"].iloc[0]
-        rel = to_relative_time_index(win)
-        event_time = get_index_middle(win)
-        plot_multiple_timeseries(
-            rel,
-            cols,
-            xlabel=f"Time relative to {event_type} (s)",
-            title=f"{aircraft}, {event_type} {event_id}: {event_time}",
-            filename=(
-                f"plots/case-study/timeseries/each-{event_type}/"
-                f"{aircraft}/{aircraft}_{initials}{event_id:02}_{dt_str}_.png"
-            ),
-        )
-
-
 wind_file = (
     "split/Spring 2025/CS2/20250429051654/cwip_CS2_20250429051654_wind.csv"
 )
@@ -83,19 +83,41 @@ summary_df = calc_summary(wind_df, wind_file).T
 summary_df.to_csv(f"out/case-study/{stem}_summary.csv", header=False)
 
 seeds = select_seed_locations(wind_df)
-pens = wind_df[wind_df["lwc [g/m^3]"] > LWC_THRESHOLD]
+seeds["seed_id"] = range(1, len(seeds) + 1)
+
+pens = wind_df[wind_df["lwc [g/m^3]"] > LWC_THRESHOLD].copy()
+pens["pen_id"] = range(1, len(pens) + 1)
+
+# plot_flight_timeseries_with_seed_and_penetration_vlines(
+#     wind_df, "lwc [g/m^3]", seeds, pens
+# )
+
+start_ts = wind_df.index[0]
+dt_str = start_ts.strftime("%Y%m%d_%H%M%S")
+aircraft = wind_df["aircraft"].iloc[0]
 
 
-plot_flight_timeseries_with_seed_and_penetration_vlines(
-    wind_df, "lwc [g/m^3]", seeds, pens
+seed_extent = get_map_extent(pens, offset=0.025)
+plot_flight_track_with_pens_and_seeds(
+    wind_df,
+    seeds,
+    pens,
+    extent=seed_extent,
+    radar_label_offset=0.02,
+    title=f"{aircraft}, {start_ts}",
+    filename=f"plots/case-study/maps/pens-seeds/{aircraft}_{dt_str}.png",
 )
 
-resampled_wind_df = resample_1s(wind_df)
-start_ts = resampled_wind_df.index[0]
-dt_str = start_ts.strftime("%Y%m%d_%H%M%S")
-aircraft = resampled_wind_df["aircraft"].iloc[0]
+import sys
+sys.exit()
 
-resampled_wind_df["diff"] = resampled_wind_df["lwc [g/m^3]"].diff()
+
+plot_flight_multi_timeseries_with_seed_vlines(
+    wind_df,
+    seeds,
+    filename=f"plots/case-study/timeseries/all-flight/{aircraft}_{dt_str}.png",
+)
+
 
 if len(seeds) < 1:
     raise EmptyDataError(f"No seed events for {start_ts}, {aircraft}")
@@ -107,9 +129,18 @@ pen_windows_list = select_time_windows(wind_df, pens, win_td)
 seed_windows_df = time_windows_to_df(seed_windows_list)
 pen_windows_df = time_windows_to_df(pen_windows_list)
 
+seed_in_pen = pen_windows_df.loc[seeds.index]
+# seed_in_pen = pd.merge(seeds, pen_windows_df, how="inner", on="datetime")
+pens_with_seed_count = seed_in_pen["window_count"].value_counts().sort_index()
+windows_description = describe_time_windows(seeds, pens, pens_with_seed_count)
+
+
+plot_bar_pens_per_window(pens_with_seed_count)
+
+
 # Plot each event
-plot_event_timeseries(seed_windows_list, aircraft, dt_str, "seed-event")
-plot_event_timeseries(pen_windows_list, aircraft, dt_str, "penetration")
+plot_pen_window_timeseries(seed_windows_list, aircraft, dt_str, "seed-event")
+plot_seed_window_timeseries(pen_windows_list, aircraft, dt_str, "penetration")
 
 seed_windows_rel_list = [to_relative_time_index(df) for df in seed_windows_list]
 seed_windows_rel_df = pd.concat(seed_windows_rel_list)
@@ -174,3 +205,12 @@ for col in cols:
         ),
         xlabel="Time relative to cloud penetrations (s)",
     )
+
+plot_boxplot_pens_seeds(
+    pens,
+    seeds,
+    dt_str,
+    aircraft,
+    title=f"{aircraft}, {start_ts}",
+    filename=f"plots/case-study/boxplots/pen-vs-seed/{aircraft}/{aircraft}_{dt_str}_lwc.png",
+)

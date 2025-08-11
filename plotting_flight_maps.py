@@ -2,15 +2,12 @@ import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
 from cartopy.feature import ShapelyFeature
-import matplotlib.dates as mdates
 import matplotlib.patheffects as pe
 import pandas as pd
 import matplotlib.cm as cm
+from utils_plotting import MEDIUM_SIZE, SMALL_SIZE
 
 
-SMALL_SIZE = 8
-MEDIUM_SIZE = 14
-BIGGER_SIZE = 42
 
 
 def plot_flight_3d_colorbar(lat, lon, alt, col):

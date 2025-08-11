@@ -16,7 +16,6 @@ for wind_file in wind_files:
     seed_locations = select_seed_locations(wind)
 
     resampled = resample_1s(wind)
-    plot_flight_multi_timeseries_with_seed_vlines(resampled, seed_locations)
 
     resampled = resampled[
         resampled["lon [deg]"] > 30
@@ -25,6 +24,11 @@ for wind_file in wind_files:
         aircraft = resampled.iloc[:, -1].dropna().values[0]
         start_timestamp = resampled.index[0]
         date_time = start_timestamp.strftime("%Y%m%d_%H%M%S")
+        plot_flight_multi_timeseries_with_seed_vlines(
+            resampled,
+            seed_locations,
+            filename=f"plots/timeseries/{date_time}_{aircraft}.png",
+        )
         plot_plane_track_with_seeds(
             resampled,
             start_timestamp,

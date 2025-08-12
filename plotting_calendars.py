@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import calplot
@@ -21,6 +22,7 @@ def calplot_seed_events(df, filename=""):
     )
     fig.suptitle("Seed svents per day")
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename, bbox_inches="tight")
     plt.show()
 
@@ -41,6 +43,7 @@ def calplot_planes_per_day(df, filename=""):
     )
     fig.axes[-1].yaxis.set_major_locator(MaxNLocator(integer=True))
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename, bbox_inches="tight")
     plt.show()
 
@@ -98,5 +101,6 @@ def calplot_regions_per_day(df, filename=""):
     )
     plt.suptitle("Seeding Regions by Day")
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename, bbox_inches="tight")
     plt.show()

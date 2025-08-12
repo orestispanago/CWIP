@@ -1,3 +1,4 @@
+import os
 import seaborn as sns
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -139,6 +140,7 @@ def plot_map_seed_regions(df, sep_line=None, filename=""):
     plt.title("Fall 2024 - Spring 2025")
     plt.tight_layout()
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename)
     plt.show()
 
@@ -171,6 +173,7 @@ def plot_map_seed_periods(df, sep_line=None, filename=""):
     plt.title("Fall 2024 - Spring 2025")
     plt.tight_layout()
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename)
     plt.show()
 
@@ -206,6 +209,7 @@ def plot_map_kde_periods(df, filename=""):
     plt.title("Fall 2024 - Spring 2025")
     plt.tight_layout()
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename)
     plt.show()
 
@@ -247,6 +251,7 @@ def plot_map_kde_single_period(df, filename="", title=""):
     cbar.set_label("Seed event density", rotation=270, labelpad=15)
     plt.tight_layout()
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename, bbox_inches="tight")
     plt.show()
 
@@ -294,5 +299,6 @@ def plot_grid_percentage(df, grid=0.5, filename="", title=""):
 
     plt.tight_layout()
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename, bbox_inches="tight")
     plt.show()

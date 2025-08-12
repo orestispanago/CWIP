@@ -153,7 +153,7 @@ def plot_seeds(df, ax):
     ax.scatter(
         df["lon [deg]"],
         df["lat [deg]"],
-        marker="x",
+        marker="_",
         s=20,
         color="green",
         linewidths=1,
@@ -167,8 +167,8 @@ def plot_penetrations(df, ax):
     ax.scatter(
         df["lon [deg]"],
         df["lat [deg]"],
-        # marker=",",
-        s=40,
+        marker=",",
+        s=20,
         color="orange",
         # edgecolors="k",
         # linewidths=0.5,
@@ -188,7 +188,35 @@ def plot_penetrations(df, ax):
             path_effects=[pe.withStroke(linewidth=2, foreground="white")],
             fontsize=SMALL_SIZE,
         )
+        
+def plot_flight_track_with_seeds(
+    df, seeds, filename="", title="", extent="", radar_label_offset=0.1
+):
+    fig, ax = create_map_axes(extent=extent)
+    plot_gridlines_and_labels(ax)
+    plot_provinces(ax, facecolors="white")
 
+    plot_multirings(ax)
+    plot_plane_track(df, ax)
+
+    # plot_start_stop(df, ax)
+    
+    plot_seeds(seeds, ax)
+
+    radars_in_extent = filter_points_by_extent(ax, radar_df)
+    plot_radar_locations(
+        radars_in_extent, ax, labels=True, label_offset=radar_label_offset
+    )
+
+    # plt.legend(loc="upper left", bbox_to_anchor=(1.05, 1))
+    plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), ncol=2)
+    plt.title(title)
+    plt.tight_layout()
+    if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        plt.savefig(filename, bbox_inches="tight")
+    plt.show()
+    
 
 def plot_flight_track_with_pens_and_seeds(
     df, seeds, pens, filename="", title="", extent="", radar_label_offset=0.1

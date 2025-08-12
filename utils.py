@@ -18,7 +18,7 @@ def select_seed_locations(df):
 
 
 def select_cloud_penetrations(df, lwc_threshold=0.3):
-    return df[df["lwc [g/m^3]"].diff() > lwc_threshold]
+    return df[df["lwc [g/m^3]"].diff() > lwc_threshold].copy()
 
 def get_index_middle(df):
     return df.index[(len(df.index) - 1) // 2]

@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from pandas.errors import EmptyDataError
 
 from data_readers import read_wind_csv
-from utils import select_seed_locations, resample_1s
+from utils import select_seed_locations
 from plotting_case_study import (
     plot_flight_timeseries_with_seed_and_penetration_vlines,
     plot_bar_pens_per_window,
@@ -29,7 +29,7 @@ from plotting_flight_timeseries import (
 )
 from plotting_case_study_map import plot_flight_track_with_pens_and_seeds
 
-
+from utils import select_cloud_penetrations
 
 LWC_THRESHOLD = 0.3
 WINDOW_SEC = 8
@@ -73,14 +73,11 @@ def plot_thresholds(wind, seed_locations):
     plt.show()
 
 
-wind_file = (
-    "split/Spring 2025/CS2/20250429051654/cwip_CS2_20250429051654_wind.csv"
-)
+wind_file = ("split/Spring 2025/CS2/20250429051654/cwip_CS2_20250429051654_wind.csv")
+# wind_file = ("split/Spring 2025/CS4/20250429120855/cwip_CS4_20250429120855_wind.csv")
 wind_df = read_wind_csv(wind_file)
 
-stem = os.path.basename(wind_file)[5:-9]
-summary_df = calc_summary(wind_df, wind_file).T
-summary_df.to_csv(f"out/case-study/{stem}_summary.csv", header=False)
+
 
 seeds = select_seed_locations(wind_df)
 seeds["seed_id"] = range(1, len(seeds) + 1)
@@ -96,6 +93,11 @@ start_ts = wind_df.index[0]
 dt_str = start_ts.strftime("%Y%m%d_%H%M%S")
 aircraft = wind_df["aircraft"].iloc[0]
 
+summary_df = calc_summary(wind_df, wind_file).T
+summary_df.to_csv(f"out/case-study/{aircraft}_{dt_str}_ssummary.csv", header=False)
+seeds[['lat [deg]','lon [deg]','gps_alt [m]']].to_csv(f"out/case-study/{aircraft}_{dt_str}_seed_locations.csv")
+
+
 
 seed_extent = get_map_extent(pens, offset=0.025)
 plot_flight_track_with_pens_and_seeds(
@@ -107,9 +109,6 @@ plot_flight_track_with_pens_and_seeds(
     title=f"{aircraft}, {start_ts}",
     filename=f"plots/case-study/maps/pens-seeds/{aircraft}_{dt_str}.png",
 )
-
-import sys
-sys.exit()
 
 
 plot_flight_multi_timeseries_with_seed_vlines(
@@ -129,8 +128,8 @@ pen_windows_list = select_time_windows(wind_df, pens, win_td)
 seed_windows_df = time_windows_to_df(seed_windows_list)
 pen_windows_df = time_windows_to_df(pen_windows_list)
 
-seed_in_pen = pen_windows_df.loc[seeds.index]
-# seed_in_pen = pd.merge(seeds, pen_windows_df, how="inner", on="datetime")
+# seed_in_pen = pen_windows_df.loc[seeds.index]
+seed_in_pen = pd.merge(seeds, pen_windows_df, how="inner", on="datetime")
 pens_with_seed_count = seed_in_pen["window_count"].value_counts().sort_index()
 windows_description = describe_time_windows(seeds, pens, pens_with_seed_count)
 
@@ -139,8 +138,8 @@ plot_bar_pens_per_window(pens_with_seed_count)
 
 
 # Plot each event
-plot_pen_window_timeseries(seed_windows_list, aircraft, dt_str, "seed-event")
-plot_seed_window_timeseries(pen_windows_list, aircraft, dt_str, "penetration")
+# plot_pen_window_timeseries(seed_windows_list, aircraft, dt_str, "seed-event")
+# plot_seed_window_timeseries(pen_windows_list, aircraft, dt_str, "penetration")
 
 seed_windows_rel_list = [to_relative_time_index(df) for df in seed_windows_list]
 seed_windows_rel_df = pd.concat(seed_windows_rel_list)
@@ -183,6 +182,7 @@ cols = [
     "vel_down [m/s]",
     "accel_down [m/s^2]",
     "attack [deg]",
+    "wind_w [m/s]"
 ]
 for col in cols:
     var_tag = col.split(" ")[0]

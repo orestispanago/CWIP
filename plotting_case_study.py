@@ -67,6 +67,7 @@ def plot_boxplot_pens_seeds(
         hue="group",
         width=0.4,
         # palette="Set2",
+        showfliers=False,
         legend=False,
     )
     plt.title(title)

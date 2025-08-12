@@ -8,6 +8,7 @@ COLUMN_LABELS = {
     "wind_w [m/s]": r"$wind_{up} \ (m/s)$",
     "ss_total [%]": "Seed score (%)",
     "temp_amb [C]": "$T_{amb} \ (\degree C)$" 
+    
 }
 
 def col_to_label(col):

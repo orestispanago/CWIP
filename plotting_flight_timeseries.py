@@ -83,7 +83,7 @@ def plot_flight_multi_timeseries_with_seed_vlines(df, seed_locations, filename="
     alt_km = df[col] / 1000
     ax2.plot(df.index, alt_km, color=alt_color)
     ax2.tick_params(axis="y", labelcolor=alt_color)
-    ax2.set_ylabel(col_to_label(col), color=alt_color)
+    ax2.set_ylabel("Altitude (km)", color=alt_color)
 
     ax3 = ax2.twinx()
     col = "temp_amb [C]"
@@ -114,9 +114,8 @@ def plot_flight_multi_timeseries_with_seed_vlines(df, seed_locations, filename="
     ax5.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     ax5.set_xlabel("Time-UTC")
 
-    aircraft = df.iloc[:, -1].dropna().values[0]
+    aircraft = df["aircraft"].values[0]
     start_timestamp = df.index[0]
-    date_time = start_timestamp.strftime("%Y%m%d_%H%M%S")
     fig.suptitle(f"{start_timestamp}, {aircraft}")
     plt.tight_layout()
     if filename:

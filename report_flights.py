@@ -6,7 +6,7 @@ from plotting_flight_timeseries import (
 )
 from utils import resample_1s, select_seed_locations
 
-wind_files = glob.glob("*/*/*/*/*wind.csv")
+wind_files = glob.glob("split/*/*/*/*wind.csv")
 
 
 for wind_file in wind_files:
@@ -21,7 +21,7 @@ for wind_file in wind_files:
         resampled["lon [deg]"] > 30
     ]  # Sometimes GPS first location is out of KSA
     if len(resampled) > 0:
-        aircraft = resampled.iloc[:, -1].dropna().values[0]
+        aircraft = resampled["aircraft"].values[0]
         start_timestamp = resampled.index[0]
         date_time = start_timestamp.strftime("%Y%m%d_%H%M%S")
         plot_flight_multi_timeseries_with_seed_vlines(

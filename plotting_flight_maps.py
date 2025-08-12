@@ -1,3 +1,4 @@
+import os
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
@@ -224,5 +225,6 @@ def plot_plane_track_with_seeds(df, start_timestamp, aircraft, filename=""):
         bbox_to_anchor=(0.5, 0.0),
     )
     if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename)
     plt.show()

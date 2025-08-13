@@ -13,14 +13,11 @@ from data_readers import read_wind_csv
 from utils.regions import SeparatorLine, classify_regions
 
 
-wind_files = glob.glob("*/*/*/*/*wind.csv")
-
-
+wind_files = glob.glob("data/split/**/*wind.csv", recursive=True)
 df_list = []
 for wind_file in wind_files:
     wind = read_wind_csv(wind_file)
-    period = wind_file.split(os.sep)[1]
-    wind["period"] = period
+    period = wind["period"].values[0]
     df_list.append(wind)
 
 all_wind = pd.concat(df_list)

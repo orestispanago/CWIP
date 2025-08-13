@@ -6,7 +6,7 @@ from plotting_flight_timeseries import (
 )
 from utils.utils import resample_1s, select_seed_locations
 
-wind_files = glob.glob("split/*/*/*/*wind.csv")
+wind_files = glob.glob("data/split/**/*wind.csv", recursive=True)
 
 
 for wind_file in wind_files:

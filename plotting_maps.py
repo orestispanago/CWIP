@@ -8,11 +8,11 @@ import pandas as pd
 from utils.plotting import SMALL_SIZE, MEDIUM_SIZE
 
 
-country_reader = Reader("shapefiles/KSA/gadm41_SAU_1.shp")
+country_reader = Reader("data/shapefiles/KSA/gadm41_SAU_1.shp")
 radar_multirings_reader = Reader(
-    "shapefiles/RCSP_MultiRings_200/RCSP_MultiRings_200.shp"
+    "data/shapefiles/RCSP_MultiRings_200/RCSP_MultiRings_200.shp"
 )
-radar_df = pd.read_csv("shapefiles/operations_radar_locations.csv")
+radar_df = pd.read_csv("data/shapefiles/operations_radar_locations.csv")
 provinces = list(country_reader.geometries())
 n_provinces = len(provinces)
 province_colors = plt.get_cmap("tab20", n_provinces)  # or "Set3", "tab10", etc.
@@ -151,13 +151,13 @@ def plot_start_stop(df, ax):
     )
 
 
-def plot_seeds(df, ax):
+def plot_seeds(df, ax, color="green", marker="_"):
     ax.scatter(
         df["lon [deg]"],
         df["lat [deg]"],
-        marker="_",
+        marker=marker,
         s=20,
-        color="green",
+        color=color,
         linewidths=1,
         zorder=5,
         transform=ccrs.PlateCarree(),

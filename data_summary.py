@@ -4,7 +4,7 @@ from tqdm import tqdm
 from data_readers import read_wind_csv
 from utils.summary import calc_summary
 
-wind_files = glob.glob("split/**/*wind.csv", recursive=True)
+wind_files = glob.glob("data/split/**/*wind.csv", recursive=True)
 
 summary_list = []
 for fname in tqdm(wind_files):
@@ -15,4 +15,4 @@ for fname in tqdm(wind_files):
 summary = pd.concat(summary_list)
 summary.reset_index(drop=True, inplace=True)
 summary = summary.sort_values("date")
-summary.to_csv("summary.csv", index=False)
+summary.to_csv("out/summary.csv", index=False)

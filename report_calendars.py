@@ -9,7 +9,7 @@ from plotting_calendars import (
     calplot_regions_per_day,
 )
 
-wind_files = glob.glob("*/*/*/*/*wind.csv")
+wind_files = glob.glob("data/split/**/*wind.csv", recursive=True)
 
 df_list = []
 for wind_file in wind_files:

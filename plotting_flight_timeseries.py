@@ -26,47 +26,58 @@ def plot_flight_timeseries_with_seed_vlines(df, col, seed_locations):
     plt.show()
 
 
-def add_seed_lines(
-    ax, seed_locations, label_first=False, label="seed-a", color="orange"
+def add_vlines(
+    ax, lines_df, label_first=False, label="seed-a", color="orange"
 ):
-    for i, event in enumerate(seed_locations.index):
+    for i, event in enumerate(lines_df.index):
         line = ax.axvline(event, color=color)
         if label_first and i == 0:
             line.set_label(label)
 
 
-def plot_flight_multi_timeseries_with_seed_vlines(df, seed_locations, filename=""):
+def plot_flight_multi_timeseries_with_vlines(df, seed_locations, penetrations="", filename=""):
 
     seed_a_events = df[df["seed-a [cnt]"].diff() > 0]
     seed_b_events = df[df["seed-b [cnt]"].diff() > 0]
 
     plt.rc("font", size=MEDIUM_SIZE)
     fig, axes = plt.subplots(3, 1, figsize=(18, 9), sharex=True)
-
-    if len(seed_a_events) > 0:
-        add_seed_lines(
+    if len(penetrations) > 0:
+        add_vlines(
             axes[0],
-            seed_a_events,
+            penetrations,
             label_first=True,
-            label="seed-a",
-            color="tab:green",
-        )
-        axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
-        for ax in axes[1:]:
-            add_seed_lines(ax, seed_a_events, label="seed-a", color="tab:green")
-
-    if len(seed_b_events) > 0:
-        add_seed_lines(
-            axes[0],
-            seed_b_events,
-            label_first=True,
-            label="seed-b",
+            label="In cloud",
             color="tab:orange",
         )
         axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
         for ax in axes[1:]:
-            add_seed_lines(
-                ax, seed_b_events, label="seed-b", color="tab:orange"
+            add_vlines(ax, penetrations, label="In cloud", color="tab:orange")
+
+    if len(seed_a_events) > 0:
+        add_vlines(
+            axes[0],
+            seed_a_events,
+            label_first=True,
+            label="seed-a",
+            color="magenta",
+        )
+        axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
+        for ax in axes[1:]:
+            add_vlines(ax, seed_a_events, label="seed-a", color="magenta")
+
+    if len(seed_b_events) > 0:
+        add_vlines(
+            axes[0],
+            seed_b_events,
+            label_first=True,
+            label="seed-b",
+            color="tab:green",
+        )
+        axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
+        for ax in axes[1:]:
+            add_vlines(
+                ax, seed_b_events, label="seed-b", color="tab:green"
             )
 
     ax1 = axes[0]

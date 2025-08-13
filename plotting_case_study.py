@@ -9,6 +9,19 @@ from utils_time_window import to_relative_time_index
 from plotting_time_window import plot_multiple_timeseries
 
 
+def plot_confusion_matrix_seed_or_pen(df, filename="", title=""):
+    cross_tab = pd.crosstab(df['flare_fired'], df['is_in_cloud'])
+    plt.rc("font", size=MEDIUM_SIZE)
+    sns.heatmap(cross_tab, annot=True, cmap='Blues', cbar=False, linewidths=1, linecolor='k')
+    plt.xlabel('In cloud')
+    plt.ylabel('Flare fired')
+    plt.title(title)
+    plt.tight_layout()
+    if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        plt.savefig(filename)
+    plt.show()
+
 def add_vlines(ax, line_locations_df, color="orange", label="", ls="-"):
     if len(line_locations_df) > 0:
         vlines = []
@@ -33,6 +46,27 @@ def plot_flight_timeseries_with_seed_and_penetration_vlines(
     ax.set_ylabel(col)
     ax.set_xlabel("Time-UTC")
     plt.title(f"{date}, {aircraft}")
+    plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
+    if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        plt.savefig(filename)
+    plt.show()
+    
+    
+def plot_flight_multi_timeseries_with_seed_and_penetration_vlines(
+    df, col, seed_locations, penetrations, filename="", title=""
+):
+    plt.rc("font", size=MEDIUM_SIZE)
+
+    fig, ax = plt.subplots(figsize=(18, 4))
+    add_vlines(ax, penetrations, color="green", label="Penetrations")
+    add_vlines(ax, seed_locations, color="orange", label="Seed events", ls="--")
+    (line,) = ax.plot(df[col], label=col)
+    # ax.grid(True, which="major", linestyle="--", linewidth=0.5, alpha=0.7)
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
+    ax.set_ylabel(col)
+    ax.set_xlabel("Time-UTC")
+    plt.title(title)
     plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
     if filename:
         os.makedirs(os.path.dirname(filename), exist_ok=True)

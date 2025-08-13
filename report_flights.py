@@ -2,7 +2,7 @@ import glob
 from data_readers import read_wind_csv
 from plotting_flight_maps import plot_plane_track_with_seeds
 from plotting_flight_timeseries import (
-    plot_flight_multi_timeseries_with_seed_vlines,
+    plot_flight_multi_timeseries_with_vlines,
 )
 from utils import resample_1s, select_seed_locations
 
@@ -24,7 +24,7 @@ for wind_file in wind_files:
         aircraft = resampled["aircraft"].values[0]
         start_timestamp = resampled.index[0]
         date_time = start_timestamp.strftime("%Y%m%d_%H%M%S")
-        plot_flight_multi_timeseries_with_seed_vlines(
+        plot_flight_multi_timeseries_with_vlines(
             resampled,
             seed_locations,
             filename=f"plots/timeseries/{date_time}_{aircraft}.png",

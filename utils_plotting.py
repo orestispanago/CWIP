@@ -1,3 +1,6 @@
+import os
+import matplotlib.pyplot as plt
+
 SMALL_SIZE = 8
 MEDIUM_SIZE = 14
 BIGGER_SIZE = 42
@@ -7,11 +10,17 @@ COLUMN_LABELS = {
     "rh [%]": "RH (%)",
     "wind_w [m/s]": r"$wind_{up} \ (m/s)$",
     "ss_total [%]": "Seed score (%)",
-    "temp_amb [C]": "$T_{amb} \ (\degree C)$" 
-    
+    "temp_amb [C]": "$T_{amb} \ (\degree C)$",
 }
+
 
 def col_to_label(col):
     if col not in COLUMN_LABELS:
         print(f"Note: {col} not found in COLUMN_LABELS")
     return COLUMN_LABELS.get(col, col)
+
+
+def savefig(filename):
+    if filename:
+        os.makedirs(os.path.dirname(filename), exist_ok=True)
+        plt.savefig(filename, bbox_inches="tight")

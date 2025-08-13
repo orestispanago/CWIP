@@ -1,4 +1,3 @@
-import os
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from cartopy.io.shapereader import Reader
@@ -6,9 +5,7 @@ from cartopy.feature import ShapelyFeature
 import matplotlib.patheffects as pe
 import pandas as pd
 import matplotlib.cm as cm
-from utils_plotting import MEDIUM_SIZE, SMALL_SIZE
-
-
+from utils_plotting import MEDIUM_SIZE, SMALL_SIZE, savefig
 
 
 def plot_flight_3d_colorbar(lat, lon, alt, col):
@@ -224,7 +221,5 @@ def plot_plane_track_with_seeds(df, start_timestamp, aircraft, filename=""):
         ncol=len(handles),
         bbox_to_anchor=(0.5, 0.0),
     )
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()

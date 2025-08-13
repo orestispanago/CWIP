@@ -2,10 +2,10 @@ import os
 import glob
 import pandas as pd
 from utils import select_seed_locations
-from plotting_regions_maps import (
+from plotting_maps_regions import (
     plot_map_kde_periods,
-    plot_map_seed_regions,
     plot_map_seed_periods,
+    plot_map_seed_regions,
     plot_map_kde_single_period,
     plot_grid_percentage,
 )
@@ -31,19 +31,25 @@ sep = SeparatorLine()
 seed_locations = classify_regions(seed_locations, sep.slope, sep.intercept)
 
 plot_map_seed_regions(
-    seed_locations, sep, filename="plots/maps/maps_regions_separation.png"
+    seed_locations,
+    sep,
+    extent="country",
+    filename="plots/maps/maps_regions_separation.png",
 )
 plot_map_seed_periods(
-    seed_locations, sep, filename="plots/maps/map_periods.png"
+    seed_locations, extent="country", filename="plots/maps/map_periods.png"
 )
 
-plot_map_kde_periods(seed_locations, filename="plots/maps/map_kde_periods.png")
+plot_map_kde_periods(
+    seed_locations, extent="country", filename="plots/maps/map_kde_periods.png"
+)
 
 for period in seed_locations["period"].unique():
     period_df = seed_locations[seed_locations["period"] == period]
     plot_map_kde_single_period(
         period_df,
         title=period,
+        extent="country",
         filename=f"plots/maps/kde/map_kde_{period}.png",
     )
 
@@ -51,6 +57,7 @@ for period in seed_locations["period"].unique():
     plot_grid_percentage(
         period_df,
         grid=grid,
+        extent="country",
         title=f"{period}, grid: {grid}",
         filename=f"plots/maps/grid/map_grid{grid} {period}.png",
     )

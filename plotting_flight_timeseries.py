@@ -1,9 +1,6 @@
-import os
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from utils_plotting import MEDIUM_SIZE, col_to_label
-
-
+from utils_plotting import MEDIUM_SIZE, col_to_label, savefig
 
 
 def plot_flight_timeseries_with_seed_vlines(df, col, seed_locations):
@@ -26,16 +23,16 @@ def plot_flight_timeseries_with_seed_vlines(df, col, seed_locations):
     plt.show()
 
 
-def add_vlines(
-    ax, lines_df, label_first=False, label="seed-a", color="orange"
-):
+def add_vlines(ax, lines_df, label_first=False, label="seed-a", color="orange"):
     for i, event in enumerate(lines_df.index):
         line = ax.axvline(event, color=color)
         if label_first and i == 0:
             line.set_label(label)
 
 
-def plot_flight_multi_timeseries_with_vlines(df, seed_locations, penetrations="", filename=""):
+def plot_flight_multi_timeseries_with_vlines(
+    df, seed_locations, penetrations="", filename=""
+):
 
     seed_a_events = df[df["seed-a [cnt]"].diff() > 0]
     seed_b_events = df[df["seed-b [cnt]"].diff() > 0]
@@ -76,9 +73,7 @@ def plot_flight_multi_timeseries_with_vlines(df, seed_locations, penetrations=""
         )
         axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
         for ax in axes[1:]:
-            add_vlines(
-                ax, seed_b_events, label="seed-b", color="tab:green"
-            )
+            add_vlines(ax, seed_b_events, label="seed-b", color="tab:green")
 
     ax1 = axes[0]
     col = "lwc [g/m^3]"
@@ -129,9 +124,7 @@ def plot_flight_multi_timeseries_with_vlines(df, seed_locations, penetrations=""
     start_timestamp = df.index[0]
     fig.suptitle(f"{start_timestamp}, {aircraft}")
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
 
 

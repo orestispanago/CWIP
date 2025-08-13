@@ -45,7 +45,7 @@ def filter_data(df):
     return filtered
 
 
-flights = glob.glob("*/*/*/*/")
+flights = glob.glob("split/*/*/*/")
 
 seed = []
 for flight in flights:

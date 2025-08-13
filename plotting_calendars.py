@@ -1,10 +1,11 @@
-import os
 import pandas as pd
 import matplotlib.pyplot as plt
 import calplot
 from matplotlib.colors import ListedColormap
 from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Patch
+
+from utils_plotting import savefig
 
 
 def calplot_seed_events(df, filename=""):
@@ -21,9 +22,7 @@ def calplot_seed_events(df, filename=""):
         yearlabel_kws={"fontname": "sans-serif"},
     )
     fig.suptitle("Seed svents per day")
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()
 
 
@@ -42,9 +41,7 @@ def calplot_planes_per_day(df, filename=""):
         suptitle="Operating planes per day",
     )
     fig.axes[-1].yaxis.set_major_locator(MaxNLocator(integer=True))
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()
 
 
@@ -100,7 +97,5 @@ def calplot_regions_per_day(df, filename=""):
         bbox_to_anchor=(1.04, 0.5),
     )
     plt.suptitle("Seeding Regions by Day")
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()

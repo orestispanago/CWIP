@@ -1,108 +1,23 @@
-import os
 import seaborn as sns
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
-from cartopy.io.shapereader import Reader
-from cartopy.feature import ShapelyFeature
-import matplotlib.patheffects as pe
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from matplotlib.ticker import FormatStrFormatter
-import pandas as pd
 import numpy as np
 import numpy.ma as ma
-from utils_plotting import SMALL_SIZE, MEDIUM_SIZE
-
-
-
-country_reader = Reader("shapefiles/KSA/gadm41_SAU_1.shp")
-radar_multirings_reader = Reader(
-    "shapefiles/RCSP_MultiRings_200/RCSP_MultiRings_200.shp"
+from plotting_maps import (
+    create_map_axes,
+    plot_gridlines_and_labels,
+    plot_multirings,
+    plot_provinces,
+    plot_radar_locations,
 )
-radar_df = pd.read_csv("shapefiles/operations_radar_locations.csv")
-provinces = list(country_reader.geometries())
-n_provinces = len(provinces)
-province_colors = plt.get_cmap("tab20", n_provinces)  # or "Set3", "tab10", etc.
-projection = ccrs.PlateCarree()
+from utils_plotting import savefig
 
 
-def create_map_axes(facecolor=""):
-    fig, ax = plt.subplots(
-        figsize=(8, 7), subplot_kw=dict(projection=projection)
-    )
-    plt.rc("font", size=MEDIUM_SIZE)
-    ax = plt.axes(projection=projection)
-    ax.set_extent([34, 56, 16, 33], crs=projection)
-    if facecolor:
-        ax.set_facecolor(facecolor)
-    return fig, ax
-
-
-def plot_provinces(ax, facecolors="white", alpha=0.6, zorder=0):
-    for i, geom in enumerate(provinces):
-        if facecolors == "provinces":
-            facecolor = province_colors(i)
-        else:
-            facecolor = facecolors
-        ax.add_geometries(
-            [geom],
-            crs=ccrs.PlateCarree(),
-            facecolor=facecolor,
-            edgecolor="gray",
-            linewidth=0.5,
-            zorder=zorder,
-            alpha=alpha,
-        )
-
-
-def plot_radar_locations(ax, labels=False, zorder=10):
-    for _, row in radar_df.iterrows():
-        ax.scatter(
-            row["Longitude"],
-            row["Latitude"],
-            marker="^",
-            color="blue",
-            edgecolors="k",
-            zorder=zorder,
-            transform=ccrs.PlateCarree(),
-        )
-        if labels:
-            ax.text(
-                row["Longitude"] + 0.3,  # offset to avoid overlap
-                row["Latitude"],
-                row["Name"],
-                transform=ccrs.PlateCarree(),
-                color="k",
-                zorder=zorder,
-                path_effects=[pe.withStroke(linewidth=2, foreground="white")],
-                fontsize=SMALL_SIZE,
-            )
-
-
-def plot_multirings(ax):
-    shape_feature_radar_multirings = ShapelyFeature(
-        radar_multirings_reader.geometries(),
-        ccrs.PlateCarree(),
-        facecolor="none",
-        edgecolor="black",
-    )
-    ax.add_feature(shape_feature_radar_multirings)
-
-
-def plot_gridlines_and_labels(ax):
-    gl = ax.gridlines(
-        draw_labels=True,
-        crs=ccrs.PlateCarree(),
-        linewidth=0.5,
-        color="gray",
-        alpha=0.5,
-    )
-    gl.top_labels = False
-    gl.right_labels = False
-
-
-def plot_map_seed_regions(df, sep_line=None, filename=""):
-    fig, ax = create_map_axes()
+def plot_map_seed_regions(df, sep_line=None, filename="", **kwargs):
+    fig, ax = create_map_axes(**kwargs)
     plot_gridlines_and_labels(ax)
     plot_provinces(ax, facecolors="provinces")
     plot_radar_locations(ax)
@@ -139,14 +54,12 @@ def plot_map_seed_regions(df, sep_line=None, filename=""):
     ax.legend(title="Region")
     plt.title("Fall 2024 - Spring 2025")
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
 
 
-def plot_map_seed_periods(df, sep_line=None, filename=""):
-    fig, ax = create_map_axes()
+def plot_map_seed_periods(df, filename="", extent=""):
+    fig, ax = create_map_axes(extent=extent)
     plot_gridlines_and_labels(ax)
     plot_provinces(ax, facecolors="provinces")
     plot_radar_locations(ax)
@@ -172,14 +85,12 @@ def plot_map_seed_periods(df, sep_line=None, filename=""):
     ax.legend(title="Operational period")
     plt.title("Fall 2024 - Spring 2025")
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
 
 
-def plot_map_kde_periods(df, filename=""):
-    fig, ax = create_map_axes()
+def plot_map_kde_periods(df, filename="", extent=""):
+    fig, ax = create_map_axes(extent=extent)
     plot_gridlines_and_labels(ax)
     plot_provinces(ax, facecolors="provinces")
     plot_radar_locations(ax, labels=True)
@@ -208,14 +119,12 @@ def plot_map_kde_periods(df, filename=""):
     ax.legend(handles=legend_handles, title="Operational period")
     plt.title("Fall 2024 - Spring 2025")
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
 
 
-def plot_map_kde_single_period(df, filename="", title=""):
-    fig, ax = create_map_axes()
+def plot_map_kde_single_period(df, filename="", title="", extent=""):
+    fig, ax = create_map_axes(extent=extent)
     plot_gridlines_and_labels(ax)
     plot_provinces(ax)
     plot_radar_locations(ax, labels=True)
@@ -250,14 +159,12 @@ def plot_map_kde_single_period(df, filename="", title=""):
     cbar.ax.yaxis.set_major_formatter(FormatStrFormatter("%.2f"))
     cbar.set_label("Seed event density", rotation=270, labelpad=15)
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()
 
 
-def plot_grid_percentage(df, grid=0.5, filename="", title=""):
-    fig, ax = create_map_axes()
+def plot_grid_percentage(df, grid=0.5, filename="", title="", extent=""):
+    fig, ax = create_map_axes(extent=extent)
     plot_gridlines_and_labels(ax)
     plot_provinces(ax)
     plot_radar_locations(ax, labels=True)
@@ -298,7 +205,5 @@ def plot_grid_percentage(df, grid=0.5, filename="", title=""):
     )
 
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()

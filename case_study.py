@@ -13,7 +13,7 @@ from plotting_case_study import (
     plot_boxplot_pens_seeds,
     plot_pen_window_timeseries,
     plot_seed_window_timeseries,
-    plot_confusion_matrix_seed_or_pen
+    plot_confusion_matrix_seed_or_pen,
 )
 from utils_summary import calc_summary
 from utils_time_window import (
@@ -29,12 +29,13 @@ from plotting_time_window import (
 from plotting_flight_timeseries import (
     plot_flight_multi_timeseries_with_vlines,
 )
-from plotting_case_study_map import plot_flight_track_with_pens_and_seeds
+from plotting_maps_case_study import plot_flight_track_with_pens_and_seeds
 
 from utils import select_cloud_penetrations
 
 LWC_THRESHOLD = 0.3
 WINDOW_SEC = 8
+
 
 def get_map_extent(df, offset=0.01):
     xmin = df["lon [deg]"].min() - offset
@@ -73,10 +74,11 @@ def plot_thresholds(wind, seed_locations):
     plt.show()
 
 
-wind_file = ("split/Spring 2025/CS2/20250429051654/cwip_CS2_20250429051654_wind.csv")
+wind_file = (
+    "split/Spring 2025/CS2/20250429051654/cwip_CS2_20250429051654_wind.csv"
+)
 # wind_file = ("split/Spring 2025/CS4/20250429120855/cwip_CS4_20250429120855_wind.csv")
 wind_df = read_wind_csv(wind_file)
-
 
 
 seeds = select_seed_locations(wind_df)
@@ -85,8 +87,10 @@ seeds["seed_id"] = range(1, len(seeds) + 1)
 # pens = wind_df[wind_df["lwc [g/m^3]"] > LWC_THRESHOLD].copy()
 
 cloud_mask = wind_df["lwc [g/m^3]"] > 0.3
-flare_mask = (wind_df["seed-a [cnt]"].diff() > 0) | (wind_df["seed-b [cnt]"].diff() > 0)
-wind_df['is_in_cloud'] = cloud_mask
+flare_mask = (wind_df["seed-a [cnt]"].diff() > 0) | (
+    wind_df["seed-b [cnt]"].diff() > 0
+)
+wind_df["is_in_cloud"] = cloud_mask
 wind_df["flare_fired"] = flare_mask
 
 in_cloud_ids = (cloud_mask != cloud_mask.shift()).cumsum()[cloud_mask]
@@ -111,27 +115,30 @@ dt_str = start_ts.strftime("%Y%m%d_%H%M%S")
 aircraft = wind_df["aircraft"].iloc[0]
 
 summary_df = calc_summary(wind_df, wind_file).T
-summary_df.to_csv(f"out/case-study/{aircraft}_{dt_str}_summary.csv", header=False)
-seeds[['lat [deg]','lon [deg]','gps_alt [m]']].to_csv(f"out/case-study/{aircraft}_{dt_str}_seed_locations.csv")
+summary_df.to_csv(
+    f"out/case-study/{aircraft}_{dt_str}_summary.csv", header=False
+)
+seeds[["lat [deg]", "lon [deg]", "gps_alt [m]"]].to_csv(
+    f"out/case-study/{aircraft}_{dt_str}_seed_locations.csv"
+)
 
-plot_confusion_matrix_seed_or_pen(in_cloud_or_flare_fired, 
-                                  title=f"{aircraft}, {start_ts}",
-                                  filename=f"plots/case-study/confusion-matrix/{aircraft}_{dt_str}.png")
+plot_confusion_matrix_seed_or_pen(
+    in_cloud_or_flare_fired,
+    title=f"{aircraft}, {start_ts}",
+    filename=f"plots/case-study/confusion-matrix/{aircraft}_{dt_str}.png",
+)
 
 
-
-
-
-# seed_extent = get_map_extent(pens, offset=0.025)
-# plot_flight_track_with_pens_and_seeds(
-#     wind_df,
-#     seeds,
-#     pens,
-#     extent=seed_extent,
-#     radar_label_offset=0.02,
-#     title=f"{aircraft}, {start_ts}",
-#     filename=f"plots/case-study/maps/pens-seeds/{aircraft}_{dt_str}.png",
-# )
+seed_extent = get_map_extent(pens, offset=0.025)
+plot_flight_track_with_pens_and_seeds(
+    wind_df,
+    seeds,
+    pens,
+    extent=seed_extent,
+    radar_label_offset=0.02,
+    title=f"{aircraft}, {start_ts}",
+    filename=f"plots/case-study/maps/pens-seeds/{aircraft}_{dt_str}.png",
+)
 
 
 plot_flight_multi_timeseries_with_vlines(
@@ -141,6 +148,7 @@ plot_flight_multi_timeseries_with_vlines(
     filename=f"plots/case-study/timeseries/all-flight/{aircraft}_{dt_str}.png",
 )
 import sys
+
 sys.exit()
 
 
@@ -208,7 +216,7 @@ cols = [
     "vel_down [m/s]",
     "accel_down [m/s^2]",
     "attack [deg]",
-    "wind_w [m/s]"
+    "wind_w [m/s]",
 ]
 for col in cols:
     var_tag = col.split(" ")[0]

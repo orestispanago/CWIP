@@ -2,25 +2,30 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
 import pandas as pd
-import os
-from utils_plotting import MEDIUM_SIZE, col_to_label
+from utils_plotting import MEDIUM_SIZE, col_to_label, savefig
 from utils import get_index_middle
 from utils_time_window import to_relative_time_index
 from plotting_time_window import plot_multiple_timeseries
 
 
 def plot_confusion_matrix_seed_or_pen(df, filename="", title=""):
-    cross_tab = pd.crosstab(df['flare_fired'], df['is_in_cloud'])
+    cross_tab = pd.crosstab(df["flare_fired"], df["is_in_cloud"])
     plt.rc("font", size=MEDIUM_SIZE)
-    sns.heatmap(cross_tab, annot=True, cmap='Blues', cbar=False, linewidths=1, linecolor='k')
-    plt.xlabel('In cloud')
-    plt.ylabel('Flare fired')
+    sns.heatmap(
+        cross_tab,
+        annot=True,
+        cmap="Blues",
+        cbar=False,
+        linewidths=1,
+        linecolor="k",
+    )
+    plt.xlabel("In cloud")
+    plt.ylabel("Flare fired")
     plt.title(title)
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
+
 
 def add_vlines(ax, line_locations_df, color="orange", label="", ls="-"):
     if len(line_locations_df) > 0:
@@ -47,12 +52,10 @@ def plot_flight_timeseries_with_seed_and_penetration_vlines(
     ax.set_xlabel("Time-UTC")
     plt.title(f"{date}, {aircraft}")
     plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
-    
-    
+
+
 def plot_flight_multi_timeseries_with_seed_and_penetration_vlines(
     df, col, seed_locations, penetrations, filename="", title=""
 ):
@@ -68,9 +71,7 @@ def plot_flight_multi_timeseries_with_seed_and_penetration_vlines(
     ax.set_xlabel("Time-UTC")
     plt.title(title)
     plt.legend(loc="upper left", bbox_to_anchor=(1, 1))
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
 
 
@@ -108,9 +109,7 @@ def plot_boxplot_pens_seeds(
     plt.xlabel("")
     plt.ylabel(col_to_label(col))
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()
 
 

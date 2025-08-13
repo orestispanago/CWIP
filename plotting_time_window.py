@@ -1,7 +1,6 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
-import os
-from utils_plotting import MEDIUM_SIZE, col_to_label
+from utils_plotting import MEDIUM_SIZE, col_to_label, savefig
 
 
 def plot_multiple_timeseries(df, columns, xlabel="", filename="", title=""):
@@ -17,9 +16,7 @@ def plot_multiple_timeseries(df, columns, xlabel="", filename="", title=""):
     axes[-1].set_xlabel(xlabel)
     plt.suptitle(title)
     plt.tight_layout()
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()
 
 
@@ -48,9 +45,7 @@ def plot_flight_boxplots_by_event(
         sns.boxplot(
             data=time_windows_clean, x="window_count", y=col, showfliers=False
         )
-        if filename:
-            os.makedirs(os.path.dirname(filename), exist_ok=True)
-            plt.savefig(filename, bbox_inches="tight")
+        savefig(filename)
         plt.show()
     else:
         print(f"No values to plot for {aircraft}, {start_timestamp}")
@@ -72,9 +67,7 @@ def plot_barplot_by_relative_time(
     plt.ylabel(col_to_label(col))
     plt.title(title)
     plt.suptitle("")
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()
 
 
@@ -107,9 +100,7 @@ def plot_boxplot_by_relative_time(
     plt.xlabel(xlabel)
     plt.ylabel(col_to_label(col))
     plt.title(title)
-    if filename:
-        os.makedirs(os.path.dirname(filename), exist_ok=True)
-        plt.savefig(filename, bbox_inches="tight")
+    savefig(filename)
     plt.show()
 
 

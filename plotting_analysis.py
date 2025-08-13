@@ -1,8 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
-from utils_plotting import MEDIUM_SIZE
-
+from utils_plotting import MEDIUM_SIZE, savefig
 
 
 def plot_hist(df, col, filename=""):
@@ -11,8 +10,7 @@ def plot_hist(df, col, filename=""):
     plt.rc("font", size=MEDIUM_SIZE)
     plt.xlabel(col)
     plt.tight_layout()
-    if filename:
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
 
 
@@ -41,8 +39,7 @@ def plot_scatter(df, x, y, filename="", title=""):
     plt.ylabel(y)
     plt.title(title)
     plt.tight_layout()
-    if filename:
-        plt.savefig(filename)
+    savefig(filename)
     plt.show()
 
 
@@ -111,32 +108,34 @@ def plot_bar_stacked(df, col1, col2, ylabel=""):
     ax.legend()
     plt.show()
 
+
 def plot_bar_multiple_side_by_side(df, columns, ylabel=""):
     plt.rc("font", size=MEDIUM_SIZE)
     fig, ax = plt.subplots(figsize=(60, 5))
-    
+
     x = np.arange(len(df.index))  # numeric positions for bars
-    width = 0.8 / len(columns)    # total width split across columns
+    width = 0.8 / len(columns)  # total width split across columns
 
     for i, col in enumerate(columns):
         ax.bar(
-            x + i * width, 
-            df[col], 
-            width=width, 
-            label=col, 
-            edgecolor="black", 
-            alpha=0.7
+            x + i * width,
+            df[col],
+            width=width,
+            label=col,
+            edgecolor="black",
+            alpha=0.7,
         )
 
     # ax.minorticks_on()
     ax.grid(True, which="major", linestyle="-", linewidth=0.8, alpha=0.8)
     ax.grid(True, which="minor", linestyle=":", linewidth=0.5, alpha=0.5)
     ax.set_ylabel(ylabel)
-    ax.set_xticks(x + width * (len(columns)-1)/2)
+    ax.set_xticks(x + width * (len(columns) - 1) / 2)
     ax.set_xticklabels(df.index)
     ax.legend()
     plt.show()
-    
+
+
 def plot_lines(df, columns):
     plt.rc("font", size=MEDIUM_SIZE)
     fig, ax = plt.subplots(figsize=(14, 6))
@@ -144,7 +143,8 @@ def plot_lines(df, columns):
         ax.plot(df.index, df[col], marker="o", label=col, linewidth=3)
     plt.legend()
     plt.show()
-    
+
+
 def area_plot(df, columns, ylabel=""):
     df[columns].plot.area(figsize=(14, 6), alpha=0.6)
     plt.ylabel(ylabel)

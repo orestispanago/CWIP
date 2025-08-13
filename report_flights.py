@@ -1,6 +1,6 @@
 import glob
 from data_readers import read_wind_csv
-from plotting_flight_maps import plot_plane_track_with_seeds
+from plotting_maps_flights import plot_plane_track_with_seeds
 from plotting_flight_timeseries import (
     plot_flight_multi_timeseries_with_vlines,
 )

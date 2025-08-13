@@ -5,7 +5,7 @@ from cartopy.feature import ShapelyFeature
 import matplotlib.patheffects as pe
 import pandas as pd
 
-from utils_plotting import SMALL_SIZE, MEDIUM_SIZE
+from utils.plotting import SMALL_SIZE, MEDIUM_SIZE
 
 
 country_reader = Reader("shapefiles/KSA/gadm41_SAU_1.shp")

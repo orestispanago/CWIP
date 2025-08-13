@@ -5,7 +5,7 @@ from matplotlib.colors import ListedColormap
 from matplotlib.ticker import MaxNLocator
 from matplotlib.patches import Patch
 
-from utils_plotting import savefig
+from utils.plotting import savefig
 
 
 def calplot_seed_events(df, filename=""):

@@ -1,5 +1,5 @@
-import os
 import pandas as pd
+
 
 def read_col_names(fname, row=26):
     header = pd.read_csv(fname, header=None, skiprows=row, nrows=1, sep=",")

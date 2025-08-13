@@ -13,7 +13,7 @@ from plotting_maps import (
     plot_provinces,
     plot_radar_locations,
 )
-from utils_plotting import savefig
+from utils.plotting import savefig
 
 
 def plot_map_seed_regions(df, sep_line=None, filename="", **kwargs):

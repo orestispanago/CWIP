@@ -1,6 +1,6 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
-from utils_plotting import MEDIUM_SIZE, col_to_label, savefig
+from utils.plotting import MEDIUM_SIZE, col_to_label, savefig
 
 
 def plot_multiple_timeseries(df, columns, xlabel="", filename="", title=""):

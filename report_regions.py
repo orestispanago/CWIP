@@ -1,7 +1,7 @@
 import os
 import glob
 import pandas as pd
-from utils import select_seed_locations
+from utils.utils import select_seed_locations
 from plotting_maps_regions import (
     plot_map_kde_periods,
     plot_map_seed_periods,
@@ -10,7 +10,7 @@ from plotting_maps_regions import (
     plot_grid_percentage,
 )
 from data_readers import read_wind_csv
-from utils_regions import SeparatorLine, classify_regions
+from utils.regions import SeparatorLine, classify_regions
 
 
 wind_files = glob.glob("*/*/*/*/*wind.csv")

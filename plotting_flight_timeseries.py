@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from utils_plotting import MEDIUM_SIZE, col_to_label, savefig
+from utils.plotting import MEDIUM_SIZE, col_to_label, savefig
 
 
 def plot_flight_timeseries_with_seed_vlines(df, col, seed_locations):

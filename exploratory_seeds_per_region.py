@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from cartopy.io.shapereader import Reader
 import matplotlib.patheffects as pe
 import pandas as pd
-from utils_plotting import SMALL_SIZE, MEDIUM_SIZE
-from utils import select_seed_locations
+from utils.plotting import SMALL_SIZE, MEDIUM_SIZE
+from utils.utils import select_seed_locations
 from plotting_maps_case_study import plot_flight_track_with_seeds
 
 from data_readers import read_wind_csv

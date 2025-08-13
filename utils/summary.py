@@ -1,5 +1,5 @@
 import pandas as pd
-from utils import resample_1s, select_cloud_penetrations
+from utils.utils import resample_1s, select_cloud_penetrations
 from data_quality_control import is_geolocated
 
 
@@ -9,23 +9,25 @@ def format_timedelta(td):
         return text[7:]
     return text
 
+
 def count_seed_events(df, col):
     df_not_na = df.dropna(subset=[col])
     seed_count_first = df_not_na[col].values[0]
     seed_count_last = df_not_na[col].values[-1]
     return seed_count_last - seed_count_first
 
+
 def calc_summary(df, fname):
     period = df["period"].iloc[0]
     aircraft = df["aircraft"].iloc[0].strip()
-    
+
     start = df.index[0]
     end = df.index[-1]
     start_time = start.time()
     end_time = end.time()
-    
+
     date = start.date()
-    
+
     duration = end - start  # it is not flight time or air time
 
     resampled_df = resample_1s(df)
@@ -48,7 +50,7 @@ def calc_summary(df, fname):
     seed_a_noloc = seed_a - seed_a_loc
     seed_b_noloc = seed_b - seed_b_loc
     seed_noloc_total = seed_a_noloc + seed_b_noloc
-    
+
     penetrations02 = len(select_cloud_penetrations(df, lwc_threshold=0.2))
     penetrations025 = len(select_cloud_penetrations(df, lwc_threshold=0.25))
     penetrations03 = len(select_cloud_penetrations(df, lwc_threshold=0.3))
@@ -58,7 +60,7 @@ def calc_summary(df, fname):
     summary = {
         "period": period,
         "aircraft": aircraft,
-        "date":date,
+        "date": date,
         "start": start_time,
         "end": end_time,
         "duration": format_timedelta(duration),
@@ -76,11 +78,11 @@ def calc_summary(df, fname):
         "seed_a_noloc": seed_a_noloc,
         "seed_b_noloc": seed_b_noloc,
         "seed_noloc_total": seed_noloc_total,
-        "penetrations02":penetrations02,
-        "penetrations025":penetrations025,
-        "penetrations03":penetrations03,
-        "penetrations035":penetrations035,
-        "penetrations04":penetrations04,
+        "penetrations02": penetrations02,
+        "penetrations025": penetrations025,
+        "penetrations03": penetrations03,
+        "penetrations035": penetrations035,
+        "penetrations04": penetrations04,
         "cwip_file": fname,
     }
     summary_df = pd.DataFrame([summary])

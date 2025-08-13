@@ -2,7 +2,7 @@ import pandas as pd
 import glob
 from tqdm import tqdm
 from data_readers import read_wind_csv
-from utils_summary import calc_summary
+from utils.summary import calc_summary
 
 wind_files = glob.glob("split/**/*wind.csv", recursive=True)
 

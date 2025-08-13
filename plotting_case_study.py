@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
 import pandas as pd
-from utils_plotting import MEDIUM_SIZE, col_to_label, savefig
-from utils import get_index_middle
-from utils_time_window import to_relative_time_index
+from utils.plotting import MEDIUM_SIZE, col_to_label, savefig
+from utils.utils import get_index_middle
+from utils.time_window import to_relative_time_index
 from plotting_time_window import plot_multiple_timeseries
 
 

@@ -14,7 +14,7 @@ from plotting_maps import (
     plot_seeds,
     radar_df,
 )
-from utils_plotting import savefig
+from utils.plotting import savefig
 
 
 def plot_penetrations(df, ax):

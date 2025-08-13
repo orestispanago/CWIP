@@ -1,8 +1,8 @@
 import glob
 import pandas as pd
 from data_readers import read_wind_csv
-from utils import select_seed_locations
-from utils_regions import SeparatorLine, classify_regions
+from utils.utils import select_seed_locations
+from utils.regions import SeparatorLine, classify_regions
 from plotting_calendars import (
     calplot_planes_per_day,
     calplot_seed_events,

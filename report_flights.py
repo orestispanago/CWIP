@@ -4,7 +4,7 @@ from plotting_maps_flights import plot_plane_track_with_seeds
 from plotting_flight_timeseries import (
     plot_flight_multi_timeseries_with_vlines,
 )
-from utils import resample_1s, select_seed_locations
+from utils.utils import resample_1s, select_seed_locations
 
 wind_files = glob.glob("split/*/*/*/*wind.csv")
 

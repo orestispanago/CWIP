@@ -5,7 +5,7 @@ from cartopy.feature import ShapelyFeature
 import matplotlib.patheffects as pe
 import pandas as pd
 import matplotlib.cm as cm
-from utils_plotting import MEDIUM_SIZE, SMALL_SIZE, savefig
+from utils.plotting import MEDIUM_SIZE, SMALL_SIZE, savefig
 
 
 def plot_flight_3d_colorbar(lat, lon, alt, col):

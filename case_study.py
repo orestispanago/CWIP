@@ -6,7 +6,7 @@ from pandas.errors import EmptyDataError
 import seaborn as sns
 
 from data_readers import read_wind_csv
-from utils import select_seed_locations
+from utils.utils import select_seed_locations
 from plotting_case_study import (
     plot_flight_timeseries_with_seed_and_penetration_vlines,
     plot_bar_pens_per_window,
@@ -15,8 +15,8 @@ from plotting_case_study import (
     plot_seed_window_timeseries,
     plot_confusion_matrix_seed_or_pen,
 )
-from utils_summary import calc_summary
-from utils_time_window import (
+from utils.summary import calc_summary
+from utils.time_window import (
     select_time_windows,
     time_windows_to_df,
     to_relative_time_index,
@@ -31,7 +31,7 @@ from plotting_flight_timeseries import (
 )
 from plotting_maps_case_study import plot_flight_track_with_pens_and_seeds
 
-from utils import select_cloud_penetrations
+from utils.utils import select_cloud_penetrations
 
 LWC_THRESHOLD = 0.3
 WINDOW_SEC = 8

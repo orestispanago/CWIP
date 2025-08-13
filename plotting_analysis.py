@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
-from utils_plotting import MEDIUM_SIZE, savefig
+from utils.plotting import MEDIUM_SIZE, savefig
 
 
 def plot_hist(df, col, filename=""):

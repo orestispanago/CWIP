@@ -113,13 +113,14 @@ def plot_gridlines_and_labels(ax):
     gl.right_labels = False
 
 
-def plot_plane_track(df, ax):
+def plot_plane_track(df, ax, linestyle="-", linewidth=1):
     ax.plot(
         df["lon [deg]"],
         df["lat [deg]"],
+        linestyle=linestyle,
         # s=1,
         # edgecolors="k",
-        linewidth=1,
+        linewidth=linewidth,
         # alpha=0.5,
         zorder=5,
         transform=ccrs.PlateCarree(),
@@ -151,7 +152,7 @@ def plot_start_stop(df, ax):
     )
 
 
-def plot_seeds(df, ax, color="green", marker="_"):
+def plot_seeds(df, ax, color="green", marker="_", label="Seed events"):
     ax.scatter(
         df["lon [deg]"],
         df["lat [deg]"],
@@ -161,5 +162,5 @@ def plot_seeds(df, ax, color="green", marker="_"):
         linewidths=1,
         zorder=5,
         transform=ccrs.PlateCarree(),
-        label=f"Seed events: {len(df)}",
+        label=label,
     )

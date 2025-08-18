@@ -14,6 +14,10 @@ from plotting_case_study import (
     plot_pen_window_timeseries,
     plot_seed_window_timeseries,
     plot_confusion_matrix_seed_or_pen,
+    plot_barplot_penetrations,
+    plot_barplot_seeds,
+    plot_barplot_penetration_durations,
+    plot_time_window_multi_timeseries_with_pens_and_vlines,
 )
 from utils.summary import calc_summary
 from utils.time_window import (
@@ -26,12 +30,9 @@ from plotting_time_window import (
     plot_flight_boxplots_by_event,
     plot_multiple_timeseries,
 )
-from plotting_flight_timeseries import (
-    plot_flight_multi_timeseries_with_vlines,
-)
+from plotting_flight_timeseries import plot_flight_multi_timeseries_with_vlines
 from plotting_maps_case_study import plot_flight_track_with_pens_and_seeds
-
-from utils.utils import select_cloud_penetrations
+from utils.plotting import MEDIUM_SIZE
 
 LWC_THRESHOLD = 0.3
 WINDOW_SEC = 8
@@ -54,6 +55,18 @@ def describe_time_windows(seeds, penetrations, pens_with_seed):
     return pd.DataFrame([description]).T
 
 
+def compress_cloud_timeseries(df, max_nans_in_a_row=4):
+    # Identify NaNs
+    mask = df["cloud_id"].isna()
+    # Create groups of consecutive values
+    groups = (mask != mask.shift()).cumsum()
+    # Count position inside each run
+    nan_run_position = mask.groupby(groups).cumsum()
+    # Keep rows where either not NaN OR NaN position ≤ 5
+    df_filtered = df[~mask | (nan_run_position <= max_nans_in_a_row)]
+    return df_filtered
+
+
 def plot_thresholds(wind, seed_locations):
     lwc_thresholds = np.arange(start=0.2, stop=1, step=0.02)
     pen_thresholds_dict_list = []
@@ -74,17 +87,19 @@ def plot_thresholds(wind, seed_locations):
     plt.show()
 
 
-wind_file = (
-    "split/Spring 2025/CS2/20250429051654/cwip_CS2_20250429051654_wind.csv"
-)
-# wind_file = ("split/Spring 2025/CS4/20250429120855/cwip_CS4_20250429120855_wind.csv")
+wind_file = "data/split/Spring 2025/CS02/20250429051654/cwip_CS02_20250429051654_wind.csv"
+# wind_file = "data/split/Spring 2025/CS04/20250429120855/cwip_CS04_20250429120855_wind.csv"
+
 wind_df = read_wind_csv(wind_file)
 
+start_ts = wind_df.index[0]
+end_ts = wind_df.index[-1]
+start_str = start_ts.strftime("%H:%M")
+end_str = end_ts.strftime("%H:%M")
+dt_str = start_ts.strftime("%Y%m%d_%H%M%S")
+date = start_ts.strftime("%d/%m/%Y")
+aircraft = wind_df["aircraft"].iloc[0]
 
-seeds = select_seed_locations(wind_df)
-seeds["seed_id"] = range(1, len(seeds) + 1)
-
-# pens = wind_df[wind_df["lwc [g/m^3]"] > LWC_THRESHOLD].copy()
 
 cloud_mask = wind_df["lwc [g/m^3]"] > 0.3
 flare_mask = (wind_df["seed-a [cnt]"].diff() > 0) | (
@@ -96,23 +111,53 @@ wind_df["flare_fired"] = flare_mask
 in_cloud_ids = (cloud_mask != cloud_mask.shift()).cumsum()[cloud_mask]
 in_cloud_ids = in_cloud_ids.factorize()[0] + 1  # 1, 2, 3, ...
 
-pens = wind_df[cloud_mask].assign(in_cloud_id=in_cloud_ids)
+in_cloud = wind_df[cloud_mask].assign(in_cloud_id=in_cloud_ids)
 
-flare_rows = wind_df[flare_mask]
-in_cloud = wind_df[cloud_mask]
+# in_cloud_or_flare_fired = wind_df[cloud_mask | flare_mask]
+flares_in_cloud = wind_df[cloud_mask & flare_mask]
 
-in_cloud_or_flare_fired = wind_df[cloud_mask | flare_mask]
-in_cloud_and_flare_fired = wind_df[cloud_mask & flare_mask]
+seeds = select_seed_locations(wind_df)
+seeds["seed_id"] = range(1, len(seeds) + 1)
 
-pens["pen_id"] = range(1, len(pens) + 1)
+
+cloud_groups = (cloud_mask & ~cloud_mask.shift(fill_value=False)).cumsum()
+wind_df["cloud_id"] = cloud_groups.mask(~cloud_mask).astype("Int64")
+
 
 # plot_flight_timeseries_with_seed_and_penetration_vlines(
 #     wind_df, "lwc [g/m^3]", seeds, pens
 # )
 
-start_ts = wind_df.index[0]
-dt_str = start_ts.strftime("%Y%m%d_%H%M%S")
-aircraft = wind_df["aircraft"].iloc[0]
+
+plot_barplot_penetrations(
+    in_cloud,
+    title=f"RCSP aircraft: {aircraft}, mission: {date} ({start_str} - {end_str} UTC)",
+    filename=f"plots/case-study/barplots/pen-categories/{aircraft}_{dt_str}.png",
+)
+
+plot_barplot_seeds(
+    seeds,
+    title=f"RCSP aircraft: {aircraft}, mission: {date} ({start_str} - {end_str} UTC)",
+    filename=f"plots/case-study/barplots/seed-categories/{aircraft}_{dt_str}.png",
+)
+
+
+penetration_durations = (
+    in_cloud.groupby("in_cloud_id")
+    .agg(
+        duration_seconds=("flare_fired", "size"),  # counts rows = seconds
+        flare_fired=("flare_fired", "any"),  # True if any flare fired
+    )
+    .reset_index()
+)
+
+
+plot_barplot_penetration_durations(
+    penetration_durations,
+    title=f"RCSP aircraft: {aircraft}, mission: {date} ({start_str} - {end_str} UTC)",
+    filename=f"plots/case-study/barplots/seed-durations/{aircraft}_{dt_str}.png",
+)
+
 
 summary_df = calc_summary(wind_df, wind_file).T
 summary_df.to_csv(
@@ -122,42 +167,74 @@ seeds[["lat [deg]", "lon [deg]", "gps_alt [m]"]].to_csv(
     f"out/case-study/{aircraft}_{dt_str}_seed_locations.csv"
 )
 
-plot_confusion_matrix_seed_or_pen(
-    in_cloud_or_flare_fired,
-    title=f"{aircraft}, {start_ts}",
-    filename=f"plots/case-study/confusion-matrix/{aircraft}_{dt_str}.png",
-)
+if len(seeds) < 1:
+    raise EmptyDataError(f"No seed events for {date}, {aircraft}")
 
 
-seed_extent = get_map_extent(pens, offset=0.025)
+# plot_confusion_matrix_seed_or_pen(
+#     in_cloud_or_flare_fired,
+#     title=f"{aircraft}, {date_hour_min}",
+#     filename=f"plots/case-study/confusion-matrix/{aircraft}_{dt_str}.png",
+# )
+
+flare_cloud_ids = in_cloud.groupby("in_cloud_id")["flare_fired"].any()
+flare_cloud_ids = flare_cloud_ids[flare_cloud_ids].index
+
+pens_with_flares = in_cloud[
+    in_cloud["in_cloud_id"].isin(flare_cloud_ids)
+].copy()
+
+
+flares_in_cloud_extent = get_map_extent(flares_in_cloud, offset=0.05)
 plot_flight_track_with_pens_and_seeds(
     wind_df,
-    seeds,
-    pens,
-    extent=seed_extent,
-    radar_label_offset=0.02,
-    title=f"{aircraft}, {start_ts}",
+    flares_in_cloud,
+    pens_with_flares,
+    extent=flares_in_cloud_extent,
+    radar_label_offset=0.01,
+    title=f"RCSP aircraft: {aircraft}, flight track: {date} \n ({start_str} - {end_str} UTC)",
     filename=f"plots/case-study/maps/pens-seeds/{aircraft}_{dt_str}.png",
 )
-
 
 plot_flight_multi_timeseries_with_vlines(
     wind_df,
     seeds,
-    penetrations=pens,
+    penetrations=in_cloud,
+    title=f"RCSP aircraft: {aircraft}, CWIP measurements: {date} ({start_str} - {end_str} UTC)",
     filename=f"plots/case-study/timeseries/all-flight/{aircraft}_{dt_str}.png",
 )
-import sys
-
-sys.exit()
 
 
-if len(seeds) < 1:
-    raise EmptyDataError(f"No seed events for {start_ts}, {aircraft}")
+cols = [
+    "lwc [g/m^3]",
+    "rh [%]",
+    "temp_amb [C]",
+    "wind_w [m/s]",
+    "ss_total [%]",
+]
+
+for pen_id, group in wind_df.groupby("cloud_id"):
+    half_window = WINDOW_SEC // 2
+    start_time = group.index.min() - pd.Timedelta(seconds=half_window)
+    end_time = group.index.max() + pd.Timedelta(seconds=half_window)
+    pen_window_df = wind_df[start_time:end_time]
+    if not pen_window_df["flare_fired"].any():
+        print(f"No flare fired in {aircraft}_{dt_str}_p{pen_id}")
+        continue
+    if len(pen_window_df) < WINDOW_SEC + 3:
+        print(f"Penetration < 3 in {aircraft}_{dt_str}_p{pen_id}")
+        continue
+    plot_time_window_multi_timeseries_with_pens_and_vlines(
+        pen_window_df,
+        cols,
+        title=f"RCSP aircraft: {aircraft}, CWIP measurements: {date} ({start_str} - {end_str} UTC, \n Cloud penetration: {pen_id}",
+        filename=f"plots/case-study/timeseries/each-penetration-window/{aircraft}/{aircraft}_{dt_str}_p{pen_id}.png",
+    )
+
 
 win_td = pd.Timedelta(seconds=WINDOW_SEC)
 seed_windows_list = select_time_windows(wind_df, seeds, win_td)
-pen_windows_list = select_time_windows(wind_df, pens, win_td)
+pen_windows_list = select_time_windows(wind_df, in_cloud, win_td)
 
 seed_windows_df = time_windows_to_df(seed_windows_list)
 pen_windows_df = time_windows_to_df(pen_windows_list)
@@ -165,15 +242,18 @@ pen_windows_df = time_windows_to_df(pen_windows_list)
 # seed_in_pen = pen_windows_df.loc[seeds.index]
 seed_in_pen = pd.merge(seeds, pen_windows_df, how="inner", on="datetime")
 pens_with_seed_count = seed_in_pen["window_count"].value_counts().sort_index()
-windows_description = describe_time_windows(seeds, pens, pens_with_seed_count)
+windows_description = describe_time_windows(
+    seeds, in_cloud, pens_with_seed_count
+)
 
 
-plot_bar_pens_per_window(pens_with_seed_count)
+# plot_bar_pens_per_window(pens_with_seed_count)
 
 
 # Plot each event
 # plot_pen_window_timeseries(seed_windows_list, aircraft, dt_str, "seed-event")
 # plot_seed_window_timeseries(pen_windows_list, aircraft, dt_str, "penetration")
+
 
 seed_windows_rel_list = [to_relative_time_index(df) for df in seed_windows_list]
 seed_windows_rel_df = pd.concat(seed_windows_rel_list)
@@ -191,8 +271,9 @@ plot_flight_boxplots_by_event(
     filename=(
         f"plots/case-study/boxplots/by-seed-event/{aircraft}/{aircraft}_{dt_str}.png"
     ),
-    title=f"{aircraft}, {start_ts}, time window: {WINDOW_SEC} s",
+    title=f"RCSP aircraft: {aircraft}, CWIP measurements: {date} ({start_str} - {end_str} UTC) \n  time window: {WINDOW_SEC} s",
 )
+
 
 plot_flight_boxplots_by_event(
     pen_windows_df,
@@ -204,8 +285,9 @@ plot_flight_boxplots_by_event(
         f"plots/case-study/boxplots/by-penetration/{aircraft}/{aircraft}_{dt_str}.png"
     ),
     xlabel="Cloud penetrations",
-    title=f"{aircraft}, {start_ts}, time window: {WINDOW_SEC} s",
+    title=f"RCSP aircraft: {aircraft}, CWIP measurements: {date} ({start_str} - {end_str} UTC) \n  time window: {WINDOW_SEC} s",
 )
+
 
 # Relative-time boxplots for each variable
 cols = [
@@ -224,7 +306,7 @@ for col in cols:
     plot_boxplot_by_relative_time(
         seed_windows_rel_df,
         col,
-        title=f"{aircraft}, {start_ts}",
+        title=f"RCSP aircraft: {aircraft}, CWIP measurements: {date} ({start_str} - {end_str} UTC)",
         filename=(
             f"plots/case-study/boxplots/by-seed-relative-time/{aircraft}/{aircraft}_{dt_str}_{var_tag}.png"
         ),
@@ -233,7 +315,7 @@ for col in cols:
     plot_boxplot_by_relative_time(
         pen_windows_rel_df,
         col,
-        title=f"{aircraft}, {start_ts}",
+        title=f"RCSP aircraft: {aircraft}, CWIP measurements: {date} ({start_str} - {end_str} UTC)",
         filename=(
             f"plots/case-study/boxplots/by-penetration-relative-time/{aircraft}/{aircraft}_{dt_str}_{var_tag}.png"
         ),
@@ -241,10 +323,10 @@ for col in cols:
     )
 
 plot_boxplot_pens_seeds(
-    pens,
+    in_cloud,
     seeds,
     dt_str,
     aircraft,
-    title=f"{aircraft}, {start_ts}",
+    title=f"RCSP aircraft: {aircraft}, CWIP measurements: \n {date} ({start_str} - {end_str} UTC)",
     filename=f"plots/case-study/boxplots/pen-vs-seed/{aircraft}/{aircraft}_{dt_str}_lwc.png",
 )

@@ -157,7 +157,7 @@ def plot_map_kde_single_period(df, filename="", title="", extent=""):
     cbar = fig.colorbar(sm, cax=cax)
     # cbar.set_ticks([0.0, 0.1, 0.2, 0.3, 0.4, 0.5])
     cbar.ax.yaxis.set_major_formatter(FormatStrFormatter("%.2f"))
-    cbar.set_label("Seed event density", rotation=270, labelpad=15)
+    cbar.set_label("Seed event density", labelpad=15)
     plt.tight_layout()
     savefig(filename)
     plt.show()
@@ -200,9 +200,7 @@ def plot_grid_percentage(df, grid=0.5, filename="", title="", extent=""):
     divider = make_axes_locatable(ax)
     cax = divider.append_axes("right", size="3%", pad=0.05, axes_class=plt.Axes)
     cbar = fig.colorbar(mesh, cax=cax)
-    cbar.set_label(
-        "Seed events per cell / total (%)", rotation=270, labelpad=15
-    )
+    cbar.set_label("Seed events per cell / total (%)", labelpad=15)
 
     plt.tight_layout()
     savefig(filename)

@@ -93,15 +93,26 @@ def plot_plane_track_with_seeds(df, start_timestamp, aircraft, filename=""):
 
     # Plot map on ax2 zoomed to track
     plot_provinces(ax2, facecolors="provinces")
-    plot_radar_locations(ax2, df=radars_in_view, labels=True)
+    plot_radar_locations(ax2, df=radars_in_view, labels=True, label_offset=0.1)
     plot_plane_track(df, ax2)
     plot_start_stop(df, ax2)
 
     seed_a_events = df[df["seed-a [cnt]"].diff() > 0]
     seed_b_events = df[df["seed-b [cnt]"].diff() > 0]
 
-    plot_seeds(seed_a_events, ax2, marker=".")
-    plot_seeds(seed_b_events, ax2, color="magenta", marker=".")
+    plot_seeds(
+        seed_a_events,
+        ax2,
+        marker=".",
+        label=f"BiP: {len(seed_a_events)}",
+    )
+    plot_seeds(
+        seed_b_events,
+        ax2,
+        color="magenta",
+        marker=".",
+        label=f"Ej: {len(seed_b_events)}",
+    )
 
     # ax2.legend(bbox_to_anchor=(1.05, 1), loc="upper left")
 
@@ -109,7 +120,7 @@ def plot_plane_track_with_seeds(df, start_timestamp, aircraft, filename=""):
     # fig.subplots_adjust(wspace=0.05, left=0.05, right=0.88, top=0.92, bottom=0.18)
     margin = 0.07
     fig.subplots_adjust(
-        wspace=0.05, left=margin, right=1 - margin, top=0.92, bottom=0.16
+        wspace=0.08, left=margin, right=1 - margin, top=0.92, bottom=0.16
     )
     handles, labels = ax2.get_legend_handles_labels()
     fig.legend(
@@ -119,5 +130,5 @@ def plot_plane_track_with_seeds(df, start_timestamp, aircraft, filename=""):
         ncol=len(handles),
         bbox_to_anchor=(0.5, 0.0),
     )
-    savefig(filename)
+    savefig(filename, bbox_inches=None)
     plt.show()

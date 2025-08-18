@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 import matplotlib.patheffects as pe
+from adjustText import adjust_text
 
 from plotting_maps import (
     create_map_axes,
@@ -14,34 +15,50 @@ from plotting_maps import (
     plot_seeds,
     radar_df,
 )
-from utils.plotting import savefig
+from utils.plotting import savefig, MEDIUM_SIZE, LARGE_SIZE
 
 
 def plot_penetrations(df, ax):
     ax.scatter(
-        df["lon [deg]"],
-        df["lat [deg]"],
+        [],
+        [],
         marker=",",
         s=20,
         color="orange",
-        # edgecolors="k",
-        # linewidths=0.5,
-        # alpha=0.5,
-        zorder=5,
-        transform=ccrs.PlateCarree(),
-        label=f"Cloud penetrations: {len(df)}",
+        label="Cloud penetrations",
     )
-    for _, row in df.iterrows():
-        ax.text(
-            row["lon [deg]"] + 0.01,  # offset to avoid overlap
-            row["lat [deg]"],
-            f'p{row["pen_id"]}',
-            transform=ccrs.PlateCarree(),
-            color="k",
+    texts = []
+    for _, df in df.groupby("in_cloud_id"):
+        ax.scatter(
+            df["lon [deg]"],
+            df["lat [deg]"],
+            marker=",",
+            s=20,
+            color="orange",
+            # edgecolors="k",
+            # linewidths=0.5,
+            # alpha=0.5,
             zorder=5,
-            path_effects=[pe.withStroke(linewidth=2, foreground="white")],
-            fontsize=SMALL_SIZE,
+            transform=ccrs.PlateCarree(),
         )
+        texts.append(
+            ax.text(
+                df["lon [deg]"].values[0] + 0.005,  # offset to avoid overlap
+                df["lat [deg]"].values[0],
+                f'p{df["in_cloud_id"].values[0]}',
+                transform=ccrs.PlateCarree(),
+                color="k",
+                zorder=5,
+                path_effects=[pe.withStroke(linewidth=2, foreground="white")],
+                fontsize=SMALL_SIZE,
+            )
+        )
+    adjust_text(
+        texts,
+        ax=ax,
+        only_move={"points": "y", "text": "y"},
+        expand_text=(1.1, 1.2),
+    )
 
 
 def plot_flight_track_with_seeds(
@@ -74,18 +91,19 @@ def plot_flight_track_with_seeds(
 def plot_flight_track_with_pens_and_seeds(
     df, seeds, pens, filename="", title="", extent="", radar_label_offset=0.1
 ):
+    plt.rc("font", size=MEDIUM_SIZE)
     fig, ax = create_map_axes(extent=extent)
     plot_gridlines_and_labels(ax)
     plot_provinces(ax, facecolors="white")
 
     plot_multirings(ax)
-    plot_plane_track(df, ax)
+    plot_plane_track(df, ax, linestyle="--")
 
     # plot_start_stop(df, ax)
 
     plot_penetrations(pens, ax)
 
-    plot_seeds(seeds, ax)
+    plot_seeds(seeds, ax, color="red")
 
     radars_in_extent = filter_points_by_extent(ax, radar_df)
     plot_radar_locations(
@@ -94,7 +112,7 @@ def plot_flight_track_with_pens_and_seeds(
 
     # plt.legend(loc="upper left", bbox_to_anchor=(1.05, 1))
     plt.legend(loc="upper center", bbox_to_anchor=(0.5, -0.05), ncol=2)
-    plt.title(title)
+    plt.title(title, fontsize=LARGE_SIZE)
     plt.tight_layout()
     savefig(filename)
     plt.show()

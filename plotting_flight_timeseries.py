@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from utils.plotting import MEDIUM_SIZE, col_to_label, savefig
+from utils.plotting import MEDIUM_SIZE, LARGE_SIZE, col_to_label, savefig
 
 
 def plot_flight_timeseries_with_seed_vlines(df, col, seed_locations):
@@ -31,7 +31,7 @@ def add_vlines(ax, lines_df, label_first=False, label="seed-a", color="orange"):
 
 
 def plot_flight_multi_timeseries_with_vlines(
-    df, seed_locations, penetrations="", filename=""
+    df, seed_locations, penetrations="", title="", filename=""
 ):
 
     seed_a_events = df[df["seed-a [cnt]"].diff() > 0]
@@ -47,7 +47,7 @@ def plot_flight_multi_timeseries_with_vlines(
             label="In cloud",
             color="tab:orange",
         )
-        axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
+        # axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
         for ax in axes[1:]:
             add_vlines(ax, penetrations, label="In cloud", color="tab:orange")
 
@@ -56,24 +56,34 @@ def plot_flight_multi_timeseries_with_vlines(
             axes[0],
             seed_a_events,
             label_first=True,
-            label="seed-a",
+            label=f"BIP flares: {len(seed_a_events)}",
             color="magenta",
         )
-        axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
+        # axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
         for ax in axes[1:]:
-            add_vlines(ax, seed_a_events, label="seed-a", color="magenta")
+            add_vlines(
+                ax,
+                seed_a_events,
+                label=f"BIP flares: {len(seed_a_events)}",
+                color="magenta",
+            )
 
     if len(seed_b_events) > 0:
         add_vlines(
             axes[0],
             seed_b_events,
             label_first=True,
-            label="seed-b",
+            label=f"Ejectable flares: {len(seed_b_events)}",
             color="tab:green",
         )
-        axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
+        # axes[0].legend(loc="upper left", bbox_to_anchor=(1.05, 1))
         for ax in axes[1:]:
-            add_vlines(ax, seed_b_events, label="seed-b", color="tab:green")
+            add_vlines(
+                ax,
+                seed_b_events,
+                label=f"Ejectable flares: {len(seed_b_events)}",
+                color="tab:green",
+            )
 
     ax1 = axes[0]
     col = "lwc [g/m^3]"
@@ -117,13 +127,22 @@ def plot_flight_multi_timeseries_with_vlines(
     ax5.tick_params(axis="y", labelcolor=wind_color)
     ax5.set_ylabel(col_to_label(col), color=wind_color)
 
+    ax5.xaxis.set_major_locator(mdates.MinuteLocator(byminute=[0, 15, 30, 45]))
     ax5.xaxis.set_major_formatter(mdates.DateFormatter("%H:%M"))
     ax5.set_xlabel("Time-UTC")
 
-    aircraft = df["aircraft"].values[0]
-    start_timestamp = df.index[0]
-    fig.suptitle(f"{start_timestamp}, {aircraft}")
+    fig.suptitle(title, fontsize=LARGE_SIZE)
     plt.tight_layout()
+    handles, labels = [], []
+    for ax in axes:
+        h, l = ax.get_legend_handles_labels()
+        handles += h
+        labels += l
+
+    fig.legend(
+        handles, labels, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.03)
+    )
+
     savefig(filename)
     plt.show()
 

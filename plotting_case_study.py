@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import seaborn as sns
 import pandas as pd
-from utils.plotting import MEDIUM_SIZE, col_to_label, savefig
+from utils.plotting import MEDIUM_SIZE, LARGE_SIZE, col_to_label, savefig
 from utils.utils import get_index_middle
 from utils.time_window import to_relative_time_index
 from plotting_time_window import plot_multiple_timeseries
@@ -23,6 +23,78 @@ def plot_confusion_matrix_seed_or_pen(df, filename="", title=""):
     plt.ylabel("Flare fired")
     plt.title(title)
     plt.tight_layout()
+    savefig(filename)
+    plt.show()
+
+
+def plot_barplot_penetrations(df, title="", filename=""):
+    pen_summary = df.groupby("in_cloud_id")["flare_fired"].any()
+    pens_total = len(pen_summary)
+    pens_with_flares = pen_summary.sum()
+    pens_no_flare = pens_total - pens_with_flares
+
+    counts_df = pd.DataFrame(
+        [
+            ("Total", pens_total),
+            ("With flares", pens_with_flares),
+            ("No flare", pens_no_flare),
+        ],
+        columns=["Category", "Count"],
+    )
+
+    counts_df = counts_df.sort_values("Count", ascending=False)
+    plt.rc("font", size=MEDIUM_SIZE)
+    plt.figure(figsize=(8, 6))
+    ax = sns.barplot(counts_df, y="Count", x="Category", edgecolor="k")
+    ax.bar_label(ax.containers[0])
+    ax.set_xlabel("Cloud penetrations")
+    plt.title(title)
+    plt.tight_layout()
+    savefig(filename)
+    plt.show()
+
+
+def plot_barplot_seeds(df, title="", filename=""):
+    total_flares = len(df)
+    flares_in_cloud = df["is_in_cloud"].sum()
+    flares_not_in_cloud = (~df["is_in_cloud"]).sum()
+    counts_df = pd.DataFrame(
+        [
+            ("Total", total_flares),
+            ("In cloud", flares_in_cloud),
+            ("Out of cloud", flares_not_in_cloud),
+        ],
+        columns=["Category", "Count"],
+    )
+    # counts_df.sort_values("Count", ascending=False)
+    plt.rc("font", size=MEDIUM_SIZE)
+    plt.figure(figsize=(8, 6))
+    ax = sns.barplot(counts_df, y="Count", x="Category", edgecolor="k")
+    ax.bar_label(ax.containers[0])
+    ax.set_xlabel("Flares fired")
+    plt.title(title)
+    plt.tight_layout()
+    savefig(filename)
+    plt.show()
+
+
+def plot_barplot_penetration_durations(df, title="", filename=""):
+    fig_width = max(8, len(df) * 0.35)  # 0.5 inches per bar, minimum width 8
+    plt.figure(figsize=(fig_width, 6))
+    plt.rc("font", size=MEDIUM_SIZE)
+    sns.barplot(
+        data=df,
+        x="in_cloud_id",
+        y="duration_seconds",
+        hue="flare_fired",
+        edgecolor="k",
+    )
+    plt.grid(axis="y")
+    plt.locator_params(axis="y", nbins=min(len(df), 20))
+    plt.xlabel("Cloud penetration ID")
+    plt.ylabel("Duration (s)")
+    plt.title(title)
+    plt.legend(title="Flares fired")
     savefig(filename)
     plt.show()
 
@@ -169,3 +241,38 @@ def plot_seed_window_timeseries(
                 f"{aircraft}/{aircraft}_{initials}{event_id:02}_{dt_str}_.png"
             ),
         )
+
+
+def plot_time_window_multi_timeseries_with_pens_and_vlines(
+    df, columns, xlabel="Time, UTC", title="", filename=""
+):
+    n = len(columns)
+    cloud_ids = df["cloud_id"].dropna().unique()
+    flares_in_window = df.loc[df["flare_fired"] == True]
+    plt.rc("font", size=MEDIUM_SIZE)
+    fig, axes = plt.subplots(n, 1, figsize=(12, 2 * n), sharex=True)
+    if n == 1:
+        axes = [axes]
+    for ax, col in zip(axes, columns):
+        ax.plot(df.index, df[col], color="grey", label="Out of cloud")
+        for cloud_id in cloud_ids:
+            cloud_mask = df["cloud_id"] == cloud_id
+            ax.plot(
+                df.index[cloud_mask],
+                df[col][cloud_mask],
+                marker="o",
+                linewidth=4,
+                label=f"Cloud penetration {int(cloud_id)}",
+            )
+        ax.set_ylabel(col_to_label(col))
+        axes[-1].set_xlabel(xlabel)
+        ax.grid()
+        add_vlines(ax, flares_in_window, label="Seed event", color="red")
+    handles, labels = ax.get_legend_handles_labels()
+    fig.legend(
+        handles, labels, loc="lower center", ncol=4, bbox_to_anchor=(0.5, -0.03)
+    )
+    fig.suptitle(title, fontsize=LARGE_SIZE)
+    plt.tight_layout()
+    savefig(filename)
+    plt.show()

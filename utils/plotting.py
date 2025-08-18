@@ -2,8 +2,8 @@ import os
 import matplotlib.pyplot as plt
 
 SMALL_SIZE = 8
-MEDIUM_SIZE = 14
-BIGGER_SIZE = 42
+MEDIUM_SIZE = 12
+LARGE_SIZE = 16
 
 COLUMN_LABELS = {
     "lwc [g/m^3]": r"$LWC \ (g/m^{3})$",
@@ -20,7 +20,7 @@ def col_to_label(col):
     return COLUMN_LABELS.get(col, col)
 
 
-def savefig(filename):
+def savefig(filename, **kwargs):
     if filename:
         os.makedirs(os.path.dirname(filename), exist_ok=True)
         plt.savefig(filename, bbox_inches="tight")

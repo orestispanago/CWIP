@@ -27,13 +27,13 @@ for wind_file in wind_files:
         plot_flight_multi_timeseries_with_vlines(
             resampled,
             seed_locations,
-            filename=f"plots/timeseries/{date_time}_{aircraft}.png",
+            filename=f"plots/timeseries/{aircraft}_{date_time}.png",
         )
         plot_plane_track_with_seeds(
             resampled,
             start_timestamp,
             aircraft,
-            filename=f"plots/maps/flights/{date_time}_{aircraft}.png",
+            filename=f"plots/maps/flights/{aircraft}_{date_time}.png",
         )
     else:
         print(f"File: {wind_file} contains no values after filtering")

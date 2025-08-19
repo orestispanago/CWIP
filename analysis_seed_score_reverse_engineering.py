@@ -1,5 +1,6 @@
 import glob
 import pandas as pd
+from config import PLOTS_REVERSE
 from plotting_analysis import plot_scatter
 
 
@@ -33,30 +34,30 @@ plot_scatter(
     df_all,
     "lwc [g/m^3]",
     "lwc_dat [g/m^3]",
-    filename="plots/reverse-engineering/scatter-lwc-lwc_dat.png",
+    filename=f"{PLOTS_REVERSE}/scatter-lwc-lwc_dat.png",
 )
 
 plot_scatter(
     df_all,
     "temp_amb [C]",
     "ss_temp [%]",
-    filename="plots/reverse-engineering/scatter-temp_amb-ss_temp.png",
+    filename=f"{PLOTS_REVERSE}/scatter-temp_amb-ss_temp.png",
 )
 plot_scatter(
     df_all,
     "rh [%]",
     "ss_rh [%]",
-    filename="plots/reverse-engineering/scatter-rh-ss_rh.png",
+    filename=f"{PLOTS_REVERSE}/scatter-rh-ss_rh.png",
 )
 plot_scatter(
     df_all,
     "lwc [g/m^3]",
     "ss_lwc [%]",
-    filename="plots/reverse-engineering/scatter-lwc-ss_lwc.png",
+    filename=f"{PLOTS_REVERSE}/scatter-lwc-ss_lwc.png",
 )
 plot_scatter(
     df_all,
     "wind_w [m/s]",
     "ss_updraft [%]",
-    filename="plots/reverse-engineering/scatter-wind_w-ss_updraft.png",
+    filename=f"{PLOTS_REVERSE}/scatter-wind_w-ss_updraft.png",
 )

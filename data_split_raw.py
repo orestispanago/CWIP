@@ -2,6 +2,7 @@ from tqdm import tqdm
 import glob
 import os
 from data_readers import read_cwip_components
+from config import RAW_DATA, SPLIT_DATA
 
 
 def create_dest_path(fname, output_dir, period, aircraft):
@@ -15,7 +16,7 @@ def create_dest_path(fname, output_dir, period, aircraft):
     return f"{dest_dir}/cwip_{aircraft}_{date_time}"
 
 
-def parts_to_csv(fname, adc, wind, fin, metadata_wide, output_dir="data/split"):
+def parts_to_csv(fname, adc, wind, fin, metadata_wide, output_dir=SPLIT_DATA):
     period = wind["period"].values[0]
     aircraft = wind["aircraft"].values[0]
     dest_path = create_dest_path(fname, output_dir, period, aircraft)
@@ -25,12 +26,12 @@ def parts_to_csv(fname, adc, wind, fin, metadata_wide, output_dir="data/split"):
     metadata_wide.to_csv(f"{dest_path}_metadata.csv", index=False)
 
 
-files = glob.glob("data/KSA CWIP Files/**/*.csv", recursive=True)
+files = glob.glob(f"{RAW_DATA}/**/*.csv", recursive=True)
 
 for fname in tqdm(files):
     adc, wind, fin, metadata_wide = read_cwip_components(fname)
     aircraft = metadata_wide["AircraftID"].values[0].strip()
-    period = os.path.dirname(fname).split(os.sep)[2]
+    period = os.path.dirname(fname).split(os.sep)[-2]
     for df in [adc, fin, wind]:
         df["aircraft"] = aircraft
         df["period"] = period

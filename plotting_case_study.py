@@ -6,6 +6,7 @@ from utils.plotting import MEDIUM_SIZE, LARGE_SIZE, col_to_label, savefig
 from utils.utils import get_index_middle
 from utils.time_window import to_relative_time_index
 from plotting_time_window import plot_multiple_timeseries
+from config import CS_TIMESERIES
 
 
 def plot_confusion_matrix_seed_or_pen(df, filename="", title=""):
@@ -208,7 +209,7 @@ def plot_pen_window_timeseries(
             xlabel=f"Time relative to {event_type} (s)",
             title=f"{aircraft}, {event_type} {event_id}: {event_time}",
             filename=(
-                f"plots/case-study/timeseries/each-{event_type}/"
+                f"{CS_TIMESERIES}/each-{event_type}/"
                 f"{aircraft}/{aircraft}_{initials}{event_id:02}_{dt_str}_.png"
             ),
         )
@@ -237,7 +238,7 @@ def plot_seed_window_timeseries(
             xlabel=f"Time relative to {event_type} (s)",
             title=f"{aircraft}, {event_type} {event_id}: {event_time}",
             filename=(
-                f"plots/case-study/timeseries/each-{event_type}/"
+                f"{CS_TIMESERIES}/each-{event_type}/"
                 f"{aircraft}/{aircraft}_{initials}{event_id:02}_{dt_str}_.png"
             ),
         )

@@ -5,8 +5,9 @@ from plotting_flight_timeseries import (
     plot_flight_multi_timeseries_with_vlines,
 )
 from utils.utils import resample_1s, select_seed_locations
+from config import SPLIT_DATA, MAPS, TIMESERIES
 
-wind_files = glob.glob("data/split/**/*wind.csv", recursive=True)
+wind_files = glob.glob(f"{SPLIT_DATA}/**/*wind.csv", recursive=True)
 
 
 for wind_file in wind_files:
@@ -27,13 +28,13 @@ for wind_file in wind_files:
         plot_flight_multi_timeseries_with_vlines(
             resampled,
             seed_locations,
-            filename=f"plots/timeseries/{aircraft}_{date_time}.png",
+            filename=f"{TIMESERIES}/{aircraft}_{date_time}.png",
         )
         plot_plane_track_with_seeds(
             resampled,
             start_timestamp,
             aircraft,
-            filename=f"plots/maps/flights/{aircraft}_{date_time}.png",
+            filename=f"{MAPS}/flights/{aircraft}_{date_time}.png",
         )
     else:
         print(f"File: {wind_file} contains no values after filtering")

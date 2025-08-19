@@ -1,7 +1,9 @@
 import pandas as pd
 from plotting_analysis import plot_bar, plot_bar_stacked,area_plot, plot_bar_multiple_side_by_side, plot_lines
+from config import TABLES
 
-summary = pd.read_csv("summary.csv")
+
+summary = pd.read_csv(f"{TABLES}/summary.csv")
 
 summary["penetrations025_total"] = summary["penetrations025"] - summary["seed_total"]
 summary["penetrations03_total"] = summary["penetrations03"] - summary["seed_total"]

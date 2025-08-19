@@ -1,24 +1,25 @@
 import pandas as pd
 import glob
+from config import BOXPLOTS, SPLIT_DATA
 from data_readers import read_wind_csv
 from plotting_time_window import (
     plot_barplot_by_relative_time,
     plot_boxplot_by_relative_time,
-    plot_flight_boxplot_per_event,
+    plot_flight_boxplots_by_event,
     plot_flight_timeseries_lwc_diff,
     plot_flight_timeseries_lwc_diff_over_threshold,
     plot_multiple_timeseries,
 )
 
-from utils import resample_1s, select_seed_locations
-from utils_time_window import (
+from utils.utils import resample_1s, select_seed_locations
+from utils.time_window import (
     select_time_windows,
     time_windows_to_df,
     to_relative_time_index,
 )
 
 
-wind_files = glob.glob("*/*/*/*/*wind.csv")
+wind_files = glob.glob(f"{SPLIT_DATA}/**/*wind.csv", recursive=True)
 threshold = 0.3
 window_seconds = 8
 window_timedelta = pd.Timedelta(seconds=window_seconds)
@@ -47,13 +48,13 @@ for count, wind_file in enumerate(wind_files):
             wind, seed_locations, window_timedelta
         )
         seed_event_windows_df = time_windows_to_df(seed_event_windows)
-        # plot_flight_boxplot_per_event(
+        # plot_flight_boxplots_by_event(
         #     seed_event_windows_df,
         #     "lwc [g/m^3]",
         #     start_timestamp,
         #     aircraft,
         #     window_seconds=window_seconds,
-        #     filename=f"plots/boxplots/per-seed-event/{date_time}_{aircraft}.png",
+        #     filename=f"{BOXPLOTS}/per-seed-event/{date_time}_{aircraft}.png",
         # )
 
         # seed_event_example = to_relative_time_index(seed_event_windows[0])
@@ -70,7 +71,7 @@ for count, wind_file in enumerate(wind_files):
         #     seed_event_windows_df_rel,
         #     "lwc [g/m^3]",
         #     title=f"{start_timestamp}, {aircraft}",
-        #     filename=f"plots/boxplots/by-seed-relative-time/{date_time}_{aircraft}_lwc.png",
+        #     filename=f"{BOXPLOTS}/by-seed-relative-time/{date_time}_{aircraft}_lwc.png",
         # )
 
     else:
@@ -82,23 +83,23 @@ plot_boxplot_by_relative_time(
     all_seed_event_windows_rel_df,
     "lwc [g/m^3]",
     title="All flights",
-    filename="plots/boxplots/all-flights/seed_lwc.png",
+    filename=f"{BOXPLOTS}/all-flights/seed_lwc.png",
 )
 plot_boxplot_by_relative_time(
     all_seed_event_windows_rel_df,
     "rh [%]",
     title="All flights",
-    filename="plots/boxplots/all-flights/seed_rh.png",
+    filename=f"{BOXPLOTS}/all-flights/seed_rh.png",
 )
 plot_boxplot_by_relative_time(
     all_seed_event_windows_rel_df,
     "wind_w [m/s]",
     title="All flights",
-    filename="plots/boxplots/all-flights/seed_wind_w.png",
+    filename=f"{BOXPLOTS}/all-flights/seed_wind_w.png",
 )
 plot_boxplot_by_relative_time(
     all_seed_event_windows_rel_df,
     "ss_total [%]",
     title="All flights",
-    filename="plots/boxplots/all-flights/seed_ss_total.png",
+    filename=f"{BOXPLOTS}/all-flights/seed_ss_total.png",
 )

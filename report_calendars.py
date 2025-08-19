@@ -8,8 +8,9 @@ from plotting_calendars import (
     calplot_seed_events,
     calplot_regions_per_day,
 )
+from config import CALPLOTS, SPLIT_DATA
 
-wind_files = glob.glob("data/split/**/*wind.csv", recursive=True)
+wind_files = glob.glob(f"{SPLIT_DATA}/**/*wind.csv", recursive=True)
 
 df_list = []
 for wind_file in wind_files:
@@ -24,12 +25,12 @@ wind_classified = classify_regions(all_wind, sep.slope, sep.intercept)
 
 
 calplot_seed_events(
-    seed_locations, filename="plots/calplots/calplot_seed_events.png"
+    seed_locations, filename=f"{CALPLOTS}/calplot_seed_events.png"
 )
 calplot_planes_per_day(
-    wind_classified, filename="plots/calplots/calplot_planes.png"
+    wind_classified, filename=f"{CALPLOTS}/calplot_planes.png"
 )
 
 calplot_regions_per_day(
-    wind_classified, filename="plots/calplots/calplot_regions.png"
+    wind_classified, filename=f"{CALPLOTS}/calplot_regions.png"
 )

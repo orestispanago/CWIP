@@ -1,7 +1,8 @@
 import pandas as pd
 import glob
+from config import SPLIT_DATA
 
-metadata_files = flights = glob.glob("*/*/*/*/*metadata.csv")
+metadata_files = glob.glob(f"{SPLIT_DATA}/**/*metadata.csv", recursive=True)
 
 metadata_list = []
 for f in metadata_files:

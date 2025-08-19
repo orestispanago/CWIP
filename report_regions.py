@@ -11,9 +11,9 @@ from plotting_maps_regions import (
 )
 from data_readers import read_wind_csv
 from utils.regions import SeparatorLine, classify_regions
+from config import SPLIT_DATA, MAPS
 
-
-wind_files = glob.glob("data/split/**/*wind.csv", recursive=True)
+wind_files = glob.glob(f"{SPLIT_DATA}/**/*wind.csv", recursive=True)
 df_list = []
 for wind_file in wind_files:
     wind = read_wind_csv(wind_file)
@@ -31,14 +31,14 @@ plot_map_seed_regions(
     seed_locations,
     sep,
     extent="country",
-    filename="plots/maps/maps_regions_separation.png",
+    filename=f"{MAPS}/maps_regions_separation.png",
 )
 plot_map_seed_periods(
-    seed_locations, extent="country", filename="plots/maps/map_periods.png"
+    seed_locations, extent="country", filename=f"{MAPS}/map_periods.png"
 )
 
 plot_map_kde_periods(
-    seed_locations, extent="country", filename="plots/maps/map_kde_periods.png"
+    seed_locations, extent="country", filename=f"{MAPS}/map_kde_periods.png"
 )
 
 for period in seed_locations["period"].unique():
@@ -47,7 +47,7 @@ for period in seed_locations["period"].unique():
         period_df,
         title=period,
         extent="country",
-        filename=f"plots/maps/kde/map_kde_{period}.png",
+        filename=f"{MAPS}/kde/map_kde_{period}.png",
     )
 
     grid = 0.5  # degrees
@@ -56,5 +56,5 @@ for period in seed_locations["period"].unique():
         grid=grid,
         extent="country",
         title=f"{period}, grid: {grid}",
-        filename=f"plots/maps/grid/map_grid{grid} {period}.png",
+        filename=f"{MAPS}/grid/map_grid{grid} {period}.png",
     )

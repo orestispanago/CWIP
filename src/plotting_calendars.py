@@ -38,9 +38,9 @@ def calplot_planes_per_day(df, filename=""):
         cmap="jet",
         figsize=(12, 4),
         yearlabel_kws={"fontname": "sans-serif"},
-        suptitle="Operating planes per day",
     )
     fig.axes[-1].yaxis.set_major_locator(MaxNLocator(integer=True))
+    fig.suptitle("Operating planes per day")
     savefig(filename)
     plt.show()
 

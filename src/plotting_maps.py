@@ -6,13 +6,13 @@ import matplotlib.patheffects as pe
 import pandas as pd
 
 from utils.plotting import SMALL_SIZE, MEDIUM_SIZE
+from config import SHAPEFILES
 
-
-country_reader = Reader("data/shapefiles/KSA/gadm41_SAU_1.shp")
+country_reader = Reader(f"{SHAPEFILES}/KSA/gadm41_SAU_1.shp")
 radar_multirings_reader = Reader(
-    "data/shapefiles/RCSP_MultiRings_200/RCSP_MultiRings_200.shp"
+    f"{SHAPEFILES}/RCSP_MultiRings_200/RCSP_MultiRings_200.shp"
 )
-radar_df = pd.read_csv("data/shapefiles/operations_radar_locations.csv")
+radar_df = pd.read_csv(f"{SHAPEFILES}/operations_radar_locations.csv")
 provinces = list(country_reader.geometries())
 n_provinces = len(provinces)
 province_colors = plt.get_cmap("tab20", n_provinces)  # or "Set3", "tab10", etc.

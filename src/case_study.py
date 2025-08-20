@@ -33,7 +33,7 @@ from plotting_time_window import (
 from plotting_flight_timeseries import plot_flight_multi_timeseries_with_vlines
 from plotting_maps_case_study import plot_flight_track_with_pens_and_seeds
 from utils.plotting import MEDIUM_SIZE
-from config import CS_BARPLOTS, CS_BOXPLOTS, CS_TIMESERIES, CS_MAPS, CS_TABLES
+from config import CS_BARPLOTS, CS_BOXPLOTS, CS_TIMESERIES, CS_MAPS, CS_TABLES, SPLIT_DATA
 
 LWC_THRESHOLD = 0.3
 WINDOW_SEC = 8
@@ -88,8 +88,8 @@ def plot_thresholds(wind, seed_locations):
     plt.show()
 
 
-# wind_file = "data/split/Spring 2025/CS02/20250429051654/cwip_CS02_20250429051654_wind.csv"
-wind_file = "data/split/Spring 2025/CS04/20250429120855/cwip_CS04_20250429120855_wind.csv"
+wind_file = f"{SPLIT_DATA}/Spring 2025/CS02/20250429051654/cwip_CS02_20250429051654_wind.csv"
+# wind_file = "data/split/Spring 2025/CS04/20250429120855/cwip_CS04_20250429120855_wind.csv"
 
 wind_df = read_wind_csv(wind_file)
 
@@ -161,9 +161,7 @@ plot_barplot_penetration_durations(
 
 
 summary_df = calc_summary(wind_df, wind_file).T
-summary_df.to_csv(
-    f"{CS_TABLES}/{aircraft}_{dt_str}_summary.csv", header=False
-)
+summary_df.to_csv(f"{CS_TABLES}/{aircraft}_{dt_str}_summary.csv", header=False)
 seeds[["lat [deg]", "lon [deg]", "gps_alt [m]"]].to_csv(
     f"{CS_TABLES}/{aircraft}_{dt_str}_seed_locations.csv"
 )
